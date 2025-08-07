@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{63EC8EE5-7067-4412-A1A3-53FE7A5ACCF9}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runner", "Runner\Runner.csproj", "{F73DA315-560A-47D7-BBF6-39C99E7530DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{A5BEAAD0-BBC1-472B-811C-BD7DCC7A281B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MineSharpAPI", "MineSharpAPI\MineSharpAPI.csproj", "{16612578-1F82-4BE4-B09F-23710D4ED016}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F73DA315-560A-47D7-BBF6-39C99E7530DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F73DA315-560A-47D7-BBF6-39C99E7530DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F73DA315-560A-47D7-BBF6-39C99E7530DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F73DA315-560A-47D7-BBF6-39C99E7530DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5BEAAD0-BBC1-472B-811C-BD7DCC7A281B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5BEAAD0-BBC1-472B-811C-BD7DCC7A281B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5BEAAD0-BBC1-472B-811C-BD7DCC7A281B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5BEAAD0-BBC1-472B-811C-BD7DCC7A281B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16612578-1F82-4BE4-B09F-23710D4ED016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16612578-1F82-4BE4-B09F-23710D4ED016}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16612578-1F82-4BE4-B09F-23710D4ED016}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16612578-1F82-4BE4-B09F-23710D4ED016}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
