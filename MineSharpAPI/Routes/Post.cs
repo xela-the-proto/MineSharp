@@ -1,4 +1,5 @@
-﻿using MineSharpAPI.Modules.Bodies;
+﻿using System.Diagnostics;
+using MineSharpAPI.Modules.Bodies;
 using Microsoft.AspNetCore.Mvc;
 using PusherServer;
 
@@ -8,6 +9,16 @@ public class Post
 {
     public static void RegisterPosts(WebApplication app)
     {
+        app.MapPost("/api/Runners/RunServer", async ([FromBody]RunnerBody body) =>
+        {
+            var runner = new Process();
+            runner.StartInfo.FileName = program.runnerPath;
+            runner.StartInfo.Arguments = "-v " + body.version + " -f " + body.path + " -r " + body.ram ;
+            runner.StartInfo.CreateNoWindow = false;
+            runner.StartInfo.UseShellExecute = true;    
+            runner.Start();
+        });
+        
         /*
         app.MapPost("/api/msg/saveToDb", async ([FromBody]MessageBody request, Pusher pusher) =>
         {
@@ -20,5 +31,6 @@ public class Post
             return Results.Ok(response);
         });
         */
+        
     }
 }

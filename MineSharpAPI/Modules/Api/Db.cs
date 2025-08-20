@@ -53,6 +53,6 @@ public record UserDB
     [Key] 
     public string Email { get; set; }
     [StringLength(97)]
-    [Required]
+    [Required] 
     public string PasswordHash { get; set; }
 }

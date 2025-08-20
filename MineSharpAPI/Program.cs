@@ -16,12 +16,17 @@ using Serilog;
 
 public class program
 {
+    public static string runnerPath;
     public static void Main(string[] args)
     {
         
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddJsonFile($"appsettings.json", false, true)
             .AddJsonFile($"appsettings.Development.json",true,true);
+
+        //The path of the runner exe
+        //TODO: MAKE THIS ALWAYSBE THE SAME THING   
+        runnerPath = builder.Configuration["Paths:RunnerPath"];
         
         Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
         var csb = new SQLiteConnectionStringBuilder(builder.Configuration["ConnectionStrings:postgres"]);

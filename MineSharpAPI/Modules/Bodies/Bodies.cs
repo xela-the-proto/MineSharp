@@ -12,3 +12,12 @@ public record LoginBody
     
 }
 
+public record RunnerBody
+{
+    public string version { get; set; }
+    
+    public string path  { get; set; }
+    
+    public int ram { get; set; }
+}
+

@@ -10,17 +10,19 @@ public class DownloadDispatch
 {
     public static string MCJARS { get; } = $"https://mcjars.app/api/v2/builds/";
 
-    public static void DownloadJar()
+    public static void DownloadJar(string version, string path)
     {
-      Console.WriteLine("Insert version");
-      var version = Console.ReadLine();
       var client = new WebClient();
       var addres = MCJARS + ServerPlatform.VANILLA + $"/{version}";
-      client.DownloadFile(addres,"temp.json");
       
-      var structure = Deserializer.DeserializeObject<JarDownloadStructure>("C:\\Users\\thega\\RiderProjects\\MineSharp\\Runner\\bin\\Debug\\net9.0\\temp.json");
+      Console.WriteLine("Downloading main manifest");
+      Console.WriteLine(path);
+      client.DownloadFile(addres,path + "\\temp.json");
       
-      client.DownloadFile(structure.builds.First().jarUrl,"server.jar");
-
+      
+      var structure = Deserializer.DeserializeObject<JarDownloadStructure>(path + ".\\temp.json");
+      Console.WriteLine("Downloading jar");
+      client.DownloadFile(structure.builds.First().jarUrl,path + "\\server.jar");
+      
     }
 }
