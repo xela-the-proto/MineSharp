@@ -23,9 +23,4 @@
       <ProjectReference Include="..\Common\Common.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="EventsManager\Api\" />
-      <Folder Include="RunnerManager\" />
-    </ItemGroup>
-
 </Project>

@@ -13,12 +13,14 @@ public class ArgsParser
         {
             if (i % 2 == 0)
             {
-                Console.WriteLine(args[i]);
                 typeofArg.Add(args[i]);
             }
             else
             {
-                Console.WriteLine(args[i]);
+                if (args[i].Contains(@"\"))
+                {
+                    args[i] += @"\server.jar";
+                }
                 typeofArgValue.Add(args[i]);
             }
         }
