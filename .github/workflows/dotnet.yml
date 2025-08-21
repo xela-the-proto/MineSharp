@@ -1,0 +1,38 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Publish
+      run: dotnet publish
+    - name: Upload Runner Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: Runner
+        path: /home/runner/work/MineSharp/MineSharp/Runner/bin/Release/net9.0/publish/
+    - name: Upload Api Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: Api
+        path: /home/runner/work/MineSharp/MineSharp/MineSharpAPI/bin/Release/net9.0/publish/
