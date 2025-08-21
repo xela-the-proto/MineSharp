@@ -29,4 +29,10 @@ jobs:
     - name: Upload Runner Artifact
       uses: actions/upload-artifact@v4.6.2
       with:
+        name: Runner
         path: /home/runner/work/MineSharp/MineSharp/Runner/bin/Release/net9.0/publish/
+    - name: Upload Api Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: Api
+        path: /home/runner/work/MineSharp/MineSharp/MineSharpAPI/bin/Release/net9.0/publish/
