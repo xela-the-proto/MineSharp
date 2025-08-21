@@ -26,3 +26,7 @@ jobs:
       run: dotnet build --no-restore
     - name: Publish
       run: dotnet publish
+    - name: Upload Runner Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        path: /home/runner/work/MineSharp/MineSharp/Runner/bin/Release/net9.0/publish/
