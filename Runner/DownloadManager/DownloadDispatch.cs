@@ -23,6 +23,10 @@ public class DownloadDispatch
       if (!Directory.Exists(Program.ABSOLUTE_SERVER_PATH))
       {
           Directory.CreateDirectory(Program.ABSOLUTE_SERVER_PATH);
+      }else if (File.Exists(path))
+      {
+          Console.WriteLine("server already exists");
+          return;
       }
       client.DownloadFile(addres,Program.ABSOLUTE_SERVER_PATH + "\\temp.json");
       

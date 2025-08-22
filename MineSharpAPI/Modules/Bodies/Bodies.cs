@@ -21,3 +21,8 @@ public record RunnerBody
     public int ram { get; set; }
 }
 
+public record WsMessage
+{
+    public string RunnerId { get; set; }
+    public string Message { get; set; }
+}

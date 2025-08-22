@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Bodies;
@@ -116,6 +117,7 @@ public class program
             options.EnableForHttps = true;
             options.Providers.Add<GzipCompressionProvider>();
         });
+
 
         /*
         builder.Services.AddRateLimiter(opt =>
