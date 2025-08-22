@@ -5,9 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "Dev" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "Dev" ]
 
 jobs:
   build:
@@ -29,10 +29,10 @@ jobs:
     - name: Upload Runner Artifact
       uses: actions/upload-artifact@v4.6.2
       with:
-        name: Runner
+        name: Runner Dev 
         path: /home/runner/work/MineSharp/MineSharp/Runner/bin/Release/net9.0/publish/
     - name: Upload Api Artifact
       uses: actions/upload-artifact@v4.6.2
       with:
-        name: Api
+        name: Api Dev
         path: /home/runner/work/MineSharp/MineSharp/MineSharpAPI/bin/Release/net9.0/publish/
