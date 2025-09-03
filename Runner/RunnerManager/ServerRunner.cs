@@ -16,19 +16,15 @@ public class ServerRunner
             CancellationTokenSource cts = new CancellationTokenSource();
             CancellationToken ct = cts.Token;
             Thread ws_thread = new Thread(() => WebSocketServer.ServerStart(process, ct));
-        
-            process.Start();
-            ws_thread.Start();
-   
-
-            process.Exited += (sender, args) =>
-            {
-                return;
-            };
-            while (!process.HasExited)
-            {
             
-            }
+            Console.WriteLine("Start server");
+            process.Start();
+            Console.WriteLine("Start ws");
+            ws_thread.Start();
+
+            //TODO: Memory leak?
+            while (!process.HasExited);
+                
             Console.WriteLine("Cancelling");
             cts.Cancel();
         }
@@ -37,4 +33,4 @@ public class ServerRunner
             //We know that Cancel already throws because so we ignore
         }
     }
-}
+}   

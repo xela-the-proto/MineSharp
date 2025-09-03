@@ -19,4 +19,4 @@ class Program
         var runner = new ServerRunner();
         runner.startServerProcess(listOfFlags,listOfValues,listOfValues[listOfFlags.IndexOf("-f")]);
     }
-}
+}   
