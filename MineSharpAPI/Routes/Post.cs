@@ -11,7 +11,21 @@ public class Post
 {
     public static void RegisterPosts(WebApplication app)
     {
-        app.MapPost("/api/Runners/RunServer", async ([FromBody]RunnerBody body) =>
+        app.MapPost("/api/Runners/RunServer", async ([FromBody]RunnerBody body, HttpContext context) =>
+        {
+            
+            var runner = new Process();
+            runner.StartInfo.FileName = program.runnerPath;
+            runner.StartInfo.Arguments = "-v " + body.version + " -f " + body.path + " -r " + body.ram ;
+            runner.StartInfo.CreateNoWindow = false;
+            runner.StartInfo.UseShellExecute = true;    
+            runner.Start();
+            
+            
+            
+        });
+        
+        app.MapPost("/api/Runners/CreateServer", async ([FromBody]RunnerBody body, HttpContext context) =>
         {
             var runner = new Process();
             runner.StartInfo.FileName = program.runnerPath;
@@ -21,6 +35,7 @@ public class Post
             runner.Start();
         });
         
+        /*
         app.MapPost("/send", async (HttpContext context) =>
         {
             using var client = new ClientWebSocket();
@@ -45,6 +60,7 @@ public class Post
 
             return Results.Ok(responseText);
         });
+        */
 
         /*
         app.MapPost("/api/msg/saveToDb", async ([FromBody]MessageBody request, Pusher pusher) =>

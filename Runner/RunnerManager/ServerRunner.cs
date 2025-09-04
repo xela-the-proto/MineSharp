@@ -13,9 +13,11 @@ public class ServerRunner
             var process = ProcessInfoHelper.BuildStarterProcess("java", flags, values, workDir,
                 true,true,true,false);
             Console.Clear();
+            
             CancellationTokenSource cts = new CancellationTokenSource();
             CancellationToken ct = cts.Token;
-            Thread ws_thread = new Thread(() => WebSocketServer.ServerStart(process, ct));
+            var ws_thread = new Task(() => asyncWebSocketServer());
+            //Thread ws_thread = new Thread(() => WebSocketServer.ServerStart(process, ct));
             
             Console.WriteLine("Start server");
             process.Start();
