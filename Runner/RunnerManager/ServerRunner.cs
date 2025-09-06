@@ -16,7 +16,7 @@ public class ServerRunner
             
             CancellationTokenSource cts = new CancellationTokenSource();
             CancellationToken ct = cts.Token;
-            var ws_thread = new Task(() => asyncWebSocketServer());
+            var ws_thread = new Task(() => WebSocketServer.startWs(process,ct));
             //Thread ws_thread = new Thread(() => WebSocketServer.ServerStart(process, ct));
             
             Console.WriteLine("Start server");
@@ -30,9 +30,10 @@ public class ServerRunner
             Console.WriteLine("Cancelling");
             cts.Cancel();
         }
-        catch (AggregateException e)
+        catch (Exception e)
         {
-            //We know that Cancel already throws because so we ignore
+            Console.WriteLine(e);
+            throw;
         }
     }
 }   
