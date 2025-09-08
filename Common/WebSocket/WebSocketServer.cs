@@ -17,11 +17,11 @@ public class WebSocketServer
         {
             WatsonWsServer server = new WatsonWsServer("127.0.0.1");
             _server = server;
-            server.ClientConnected += OnServerOnClientConnected;
-            server.MessageReceived += OnServerOnMessageReceived;
-            process.OutputDataReceived += OnProcessOnOutputDataReceived;
+            server.ClientConnected += OnServerClientConnected;
+            server.MessageReceived += OnServerMessageReceived;
+            process.OutputDataReceived += OnProcessOutputDataReceived;
             process.BeginOutputReadLine();
-            process.ErrorDataReceived += OnProcessOnErrorDataReceived;
+            process.ErrorDataReceived += OnProcessErrorDataReceived;
             process.BeginErrorReadLine();
             
             SERVER_PROCESS = process;
@@ -35,25 +35,22 @@ public class WebSocketServer
         }
     }
 
-    public static void OnProcessOnErrorDataReceived(object sender, DataReceivedEventArgs args)
+    public static void OnProcessErrorDataReceived(object sender, DataReceivedEventArgs args)
     {
-        Console.WriteLine("sending");
-        _server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
-        
-    }
-
-    public static void OnProcessOnOutputDataReceived(object sender, DataReceivedEventArgs args)
-    {
-        Console.WriteLine("sending");
         _server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
     }
 
-    private static void OnServerOnMessageReceived(object? sender, MessageReceivedEventArgs args)
+    public static void OnProcessOutputDataReceived(object sender, DataReceivedEventArgs args)
+    {
+        _server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+    }
+
+    private static void OnServerMessageReceived(object? sender, MessageReceivedEventArgs args)
     {
         SERVER_PROCESS.StandardInput.WriteLine(Encoding.ASCII.GetString(args.Data));
     }
 
-    private static void OnServerOnClientConnected(object? sender, ConnectionEventArgs args)
+    private static void OnServerClientConnected(object? sender, ConnectionEventArgs args)
     {
         CLIENT_GUID = args.Client.Guid;
     }
