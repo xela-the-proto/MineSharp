@@ -20,9 +20,6 @@ public class Post
             runner.StartInfo.CreateNoWindow = false;
             runner.StartInfo.UseShellExecute = true;    
             runner.Start();
-            
-            
-            
         });
         
         app.MapPost("/api/Runners/CreateServer", async ([FromBody]RunnerBody body, HttpContext context) =>

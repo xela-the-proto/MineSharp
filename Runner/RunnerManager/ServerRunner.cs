@@ -1,11 +1,11 @@
-﻿using Common.Process;
+﻿using System.Buffers.Text;
+using Common.Process;
 using Common.WebSocket;
 
 namespace Runner.RunnerManager;
 
 public class ServerRunner
 {
-    public bool HasExitedEvent = false;
     public void startServerProcess(List<string> flags ,List<string> values ,string workDir)
     {
         try
@@ -23,7 +23,7 @@ public class ServerRunner
             process.Start();
             Console.WriteLine("Start ws");
             ws_thread.Start();
-
+            
             //TODO: Memory leak?
             while (!process.HasExited);
                 

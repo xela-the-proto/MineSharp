@@ -55,4 +55,8 @@
       <Folder Include="Modules\Middleware\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Common\Common.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -1,4 +1,5 @@
-﻿using MineSharpAPI.Api;
+﻿using Common.Enums;
+using MineSharpAPI.Api;
 
 namespace MineSharpAPI.Modules.Bodies;
 
@@ -11,7 +12,9 @@ public record LoginBody
     public string password { get; set; }
     
 }
-
+/// <summary>
+/// Record that contains stuff to feed into the command line to start the server
+/// </summary>
 public record RunnerBody
 {
     public string version { get; set; }
@@ -19,10 +22,6 @@ public record RunnerBody
     public string path  { get; set; }
     
     public int ram { get; set; }
-}
-
-public record WsMessage
-{
-    public string RunnerId { get; set; }
-    public string Message { get; set; }
+    
+    public ServerPlatform  platform { get; set; }
 }
