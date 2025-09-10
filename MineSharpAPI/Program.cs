@@ -136,7 +136,7 @@ public class program
         using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            if (context.Database.EnsureCreated())
+            if (!context.Database.EnsureCreated())
             {
                 context.Database.Migrate();
             }

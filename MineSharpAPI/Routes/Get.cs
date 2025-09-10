@@ -25,9 +25,6 @@ public class Get
         //I bodies servono per poter prendere dal body della richiesta una classe già preparata da poi manipoalre
         app.MapGet("/auth/", async ([FromBody] LoginBody inquilino, HttpContext http, DatabaseContext db, IAuth auth, [FromServices]IDbUser userTable) =>
         {
-            
-           
-            
             var result = auth.Authenticate(db, inquilino, builder, http).Result;
             return result;
         });

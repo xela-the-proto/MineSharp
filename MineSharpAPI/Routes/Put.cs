@@ -23,5 +23,10 @@ public class Put
             dbBilling.AddFattura(db, body);
         }).RequireAuthorization();
         */
+
+        app.MapPut("/api/runners/register", async([FromBody]RunnerDB runnerDetails, HttpContext context, DatabaseContext db) =>
+        {
+            
+        });
     }
 }

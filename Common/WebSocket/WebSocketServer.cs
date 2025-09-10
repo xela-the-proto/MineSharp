@@ -11,11 +11,12 @@ public class WebSocketServer
     private static WatsonWsServer _server;
     private static Guid CLIENT_GUID;
     private static System.Diagnostics.Process SERVER_PROCESS;
-    public static async Task startWs(System.Diagnostics.Process process, CancellationToken token)
+    public static async Task startWs(System.Diagnostics.Process process, CancellationToken token, string guid)
     {
         try
         {
-            WatsonWsServer server = new WatsonWsServer("127.0.0.1");
+            WatsonWsServer server = new WatsonWsServer();
+            
             _server = server;
             server.ClientConnected += OnServerClientConnected;
             server.MessageReceived += OnServerMessageReceived;

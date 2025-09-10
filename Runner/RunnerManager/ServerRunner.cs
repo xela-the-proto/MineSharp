@@ -16,18 +16,18 @@ public class ServerRunner
             
             CancellationTokenSource cts = new CancellationTokenSource();
             CancellationToken ct = cts.Token;
-            var ws_thread = new Task(() => WebSocketServer.startWs(process,ct));
+            var ws_thread = new Task(() => WebSocketServer.startWs(process,ct, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
             //Thread ws_thread = new Thread(() => WebSocketServer.ServerStart(process, ct));
             
-            Console.WriteLine("Start server");
+            Program.Log.Information("Start server");
             process.Start();
-            Console.WriteLine("Start ws");
+            Program.Log.Information("Start ws");
             ws_thread.Start();
             
             //TODO: Memory leak?
             while (!process.HasExited);
                 
-            Console.WriteLine("Cancelling");
+            Program.Log.Information("Cancelling");
             cts.Cancel();
         }
         catch (Exception e)

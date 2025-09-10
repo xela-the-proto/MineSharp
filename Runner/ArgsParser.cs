@@ -17,9 +17,9 @@ public class ArgsParser
             }
             else
             {
-                if (args[i].Contains(@"\"))
+                if (args[i].Contains(Path.DirectorySeparatorChar))
                 {
-                    args[i] += @"\server.jar";
+                    args[i] += Path.DirectorySeparatorChar + "server.jar";
                 }
                 typeofArgValue.Add(args[i]);
             }

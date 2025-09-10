@@ -36,6 +36,7 @@ public class DatabaseContext : DbContext
     
     //Registro i Dbset così EF sa cosa mettere nel db
     public DbSet<UserDB> User { get; set; }
+    public DbSet<RunnerDB> Runner { get; set; }
 }
 
 /*
@@ -55,4 +56,18 @@ public record UserDB
     [StringLength(97)]
     [Required] 
     public string PasswordHash { get; set; }
+}
+
+
+public record RunnerDB
+{
+    [StringLength(36)]
+    [Required]
+    [Key]
+    public string RunnerId { get; set; }
+    [StringLength(15)]
+    [Required]
+    public string RunnerPublicIp { get; set; }
+    [Required]
+    public string Token { get; set; }
 }

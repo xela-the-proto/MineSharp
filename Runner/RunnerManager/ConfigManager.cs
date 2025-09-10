@@ -6,15 +6,23 @@ namespace Runner.RunnerManager;
 
 public class ConfigManager
 {
-    public static void WriteConfig()
+    public static RunnerPropertiesStructure WriteConfig(string file_root)
     {
         var properties = new RunnerPropertiesStructure
         {
             ip = IpFinder.findLocalMachineIp(),
-            ShardGuid = Guid.NewGuid()
+            ShardGuid = Guid.NewGuid(),
+            token = ""
         };
-        File.WriteAllText("config.json", JsonConvert.SerializeObject(properties));
+        File.WriteAllText(file_root + Path.DirectorySeparatorChar + "config.json", JsonConvert.SerializeObject(properties));
+        
+        return properties;
+    }
 
+    public static RunnerPropertiesStructure ReadConfig(string file_root)
+    {
+        return JsonConvert.DeserializeObject<RunnerPropertiesStructure>(
+            File.ReadAllText(file_root + Path.DirectorySeparatorChar + "config.json"));
     }
     
     
