@@ -1,6 +1,7 @@
 ﻿using System.Buffers.Text;
 using Common.Process;
 using Common.WebSocket;
+using Serilog;
 
 namespace Runner.RunnerManager;
 
@@ -10,24 +11,25 @@ public class ServerRunner
     {
         try
         {
+            Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", flags, values, workDir,
                 true,true,true,false);
-            Console.Clear();
             
+            Log.Verbose("Creating canc token");
             CancellationTokenSource cts = new CancellationTokenSource();
             CancellationToken ct = cts.Token;
-            var ws_thread = new Task(() => WebSocketServer.startWs(process,ct, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
-            //Thread ws_thread = new Thread(() => WebSocketServer.ServerStart(process, ct));
+            var ws_thread = new Task(() => 
+                WebSocketServer.startWs(process,ct, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
             
-            Program.Log.Information("Start server");
+            Log.Information("Start server");
             process.Start();
-            Program.Log.Information("Start ws");
+            Log.Information("Start ws");
             ws_thread.Start();
             
             //TODO: Memory leak?
             while (!process.HasExited);
-                
-            Program.Log.Information("Cancelling");
+
+            Log.Information("Cancelling");
             cts.Cancel();
         }
         catch (Exception e)
@@ -36,4 +38,4 @@ public class ServerRunner
             throw;
         }
     }
-}   
+}

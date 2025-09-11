@@ -1,17 +1,16 @@
 ﻿using System.Net;
+using RestSharp;
+using Serilog;
 
 namespace Common.Utils.Net;
 
 public class IpFinder
 {
-    public static string findLocalMachineIp()
+    public static string findMachinePublicIp()
     {
-        // Get the Name of HOST  
-        string hostName = Dns.GetHostName();
-        Console.WriteLine(hostName);
-
-        string IP = Dns.GetHostByName(hostName).AddressList[0].ToString();
-        Console.WriteLine("IP Address of local machine is : " + IP);
-        return IP;
+        Log.Verbose("finding machine public ip");
+        var client = new RestClient("https://icanhazip.com/");
+        var response = client.Get(new RestRequest());
+        return response.Content.Replace(@"\n","") ?? throw new HttpRequestException("Couldn't contact icanhazip.com to get public ip!");
     }
 }

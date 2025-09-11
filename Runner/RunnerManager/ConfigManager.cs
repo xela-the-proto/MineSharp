@@ -10,7 +10,7 @@ public class ConfigManager
     {
         var properties = new RunnerPropertiesStructure
         {
-            ip = IpFinder.findLocalMachineIp(),
+            ip = IpFinder.findMachinePublicIp(),
             ShardGuid = Guid.NewGuid(),
             token = ""
         };
@@ -24,6 +24,5 @@ public class ConfigManager
         return JsonConvert.DeserializeObject<RunnerPropertiesStructure>(
             File.ReadAllText(file_root + Path.DirectorySeparatorChar + "config.json"));
     }
-    
-    
+
 }

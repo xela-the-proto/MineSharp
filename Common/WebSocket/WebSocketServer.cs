@@ -2,6 +2,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using Common.Converters;
+using Serilog;
 using WatsonWebsocket;
 
 namespace Common.WebSocket;
@@ -15,9 +16,12 @@ public class WebSocketServer
     {
         try
         {
+            Log.Information("Starting Watson ws");
             WatsonWsServer server = new WatsonWsServer();
             
             _server = server;
+            
+            Log.Information("Registering stuff");
             server.ClientConnected += OnServerClientConnected;
             server.MessageReceived += OnServerMessageReceived;
             process.OutputDataReceived += OnProcessOutputDataReceived;
@@ -26,7 +30,7 @@ public class WebSocketServer
             process.BeginErrorReadLine();
             
             SERVER_PROCESS = process;
-            
+            Log.Information("Websocket start");
             server.Start();
         }
         catch (Exception e)
@@ -38,12 +42,14 @@ public class WebSocketServer
 
     public static void OnProcessErrorDataReceived(object sender, DataReceivedEventArgs args)
     {
-        _server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+        //_server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+        Console.WriteLine(args.Data);
     }
 
     public static void OnProcessOutputDataReceived(object sender, DataReceivedEventArgs args)
     {
-        _server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+        //_server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+        Console.WriteLine(args.Data);
     }
 
     private static void OnServerMessageReceived(object? sender, MessageReceivedEventArgs args)
