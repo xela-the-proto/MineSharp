@@ -11,6 +11,7 @@ public class IpFinder
         Log.Verbose("finding machine public ip");
         var client = new RestClient("https://icanhazip.com/");
         var response = client.Get(new RestRequest());
+        client.Dispose();
         return response.Content.Replace(@"\n","") ?? throw new HttpRequestException("Couldn't contact icanhazip.com to get public ip!");
     }
 }

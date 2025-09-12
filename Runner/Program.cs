@@ -1,16 +1,15 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿#define CLI_DEBUG
+
+using System.Diagnostics;
 using Common.Json.Structures;
-using Common.Utils.Net;
 using Runner.DownloadManager;
 using Runner.RunnerManager;
 using Serilog;
-using Serilog.Events;
 
 namespace Runner;
-
 class Program
 {
+    
     //Path to the folder
     public static string BACKEND_TOKEN;
     public static string ABSOLUTE_SERVER_PATH;
@@ -61,4 +60,5 @@ class Program
             
         }
     }
+    
 }

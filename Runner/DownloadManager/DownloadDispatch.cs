@@ -1,22 +1,25 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using Common.Enums;
 using Common.Json;
 using Common.Json.Structures;
 using Newtonsoft.Json;
+using RestSharp;
 using Serilog;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Runner.DownloadManager;
 
 public class DownloadDispatch
 {
-    public static string MCJARS = $"https://mcjars.app/api/v2/builds/";
+    public static string MCJARS = $"https://mcjars.app/api/v2/";
 
 
     public static void DownloadJar(string version, string path)
     {
-      var client = new WebClient();
-      var addres = MCJARS + ServerPlatform.VANILLA + Path.DirectorySeparatorChar + $"{version}";
+      var client = new RestClient(MCJARS);
+      
+      string jarBuildManifestAddres = "/builds/" + ServerPlatform.VANILLA + "/" + $"{version}";
+      RestRequest buildDownRequest = new RestRequest(jarBuildManifestAddres);
       
       Log.Information("Downloading main manifest");
       Log.Information(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "temp.json");
@@ -29,11 +32,15 @@ public class DownloadDispatch
           Log.Information("server already exists");
           return;
       }
-      client.DownloadFile(addres,Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "temp.json");
+      var buildManifestFileInBytes = client.DownloadData(buildDownRequest);
+      File.WriteAllBytesAsync(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "temp.json",buildManifestFileInBytes ?? 
+          throw new NullReferenceException("Got empty array for build manifest!"));
       
       JarDownloadStructure structure = Deserializer.DeserializeObject<JarDownloadStructure>(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "temp.json");
-     
-      client.DownloadFile(structure.builds.First().jarUrl,Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "server.jar");
+
+      var serverJar = client.DownloadDataAsync(new RestRequest(structure.builds.First().jarUrl)).Result;
+      File.WriteAllBytesAsync(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "server.jar", serverJar ?? 
+          throw new NullReferenceException("Got empty array for java file!"));
     }
     
 }

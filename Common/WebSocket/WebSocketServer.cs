@@ -42,14 +42,16 @@ public class WebSocketServer
 
     public static void OnProcessErrorDataReceived(object sender, DataReceivedEventArgs args)
     {
-        //_server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+        _server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
         Console.WriteLine(args.Data);
     }
 
     public static void OnProcessOutputDataReceived(object sender, DataReceivedEventArgs args)
     {
-        //_server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+        _server.SendAsync(CLIENT_GUID, args.Data, WebSocketMessageType.Text, CancellationToken.None );
+        #if DEBUG
         Console.WriteLine(args.Data);
+        #endif
     }
 
     private static void OnServerMessageReceived(object? sender, MessageReceivedEventArgs args)
