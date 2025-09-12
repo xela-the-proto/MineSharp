@@ -31,7 +31,8 @@ public class ProcessInfoHelper
             RedirectStandardOutput = hookIntoStdOut,
             RedirectStandardInput = hookIntoStdIn,
             UseShellExecute = useShellExecute,
-            WorkingDirectory = workDir.Substring(0, workDir.LastIndexOf(@"\") + 1),
+            WorkingDirectory = workDir.Substring(
+                0, workDir.LastIndexOf(Path.DirectorySeparatorChar) + 1),
         };
         var process = new System.Diagnostics.Process { StartInfo = startInfo };
         return process;
