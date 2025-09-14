@@ -57,6 +57,9 @@ public class WebSocketServer
     private static void OnServerMessageReceived(object? sender, MessageReceivedEventArgs args)
     {
         SERVER_PROCESS.StandardInput.WriteLine(Encoding.ASCII.GetString(args.Data));
+        #if DEBUG
+        Console.WriteLine(args.Data);
+        #endif
     }
 
     private static void OnServerClientConnected(object? sender, ConnectionEventArgs args)

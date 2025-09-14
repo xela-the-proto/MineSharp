@@ -1,5 +1,4 @@
-﻿#define CLI_DEBUG
-
+﻿
 using System.Diagnostics;
 using Common.Json.Structures;
 using Runner.DownloadManager;
@@ -43,7 +42,7 @@ class Program
 
         if (!Directory.Exists(ABSOLUTE_SERVER_PATH))
         {
-            Log.Verbose("DIrectory doesnt exist creating");
+            Log.Verbose("Directory doesnt exist creating");
             Directory.CreateDirectory(ABSOLUTE_SERVER_PATH);
             if (!File.Exists(ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "config.json"))
             {

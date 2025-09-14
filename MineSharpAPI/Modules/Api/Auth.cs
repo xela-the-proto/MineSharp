@@ -17,7 +17,6 @@ public class Auth : IAuth
     public async Task<IResult> Authenticate(DatabaseContext db, LoginBody inquilino,
         WebApplicationBuilder builder, HttpContext httpContext)
     {
-        //Cerco nel db l'inquilino con l'email
         var body = db.User.First(s => s.Email == inquilino.email);
         if(Hashing.VerifyHash(inquilino.password, body.PasswordHash))
         {
@@ -42,8 +41,7 @@ public class Auth : IAuth
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokendescriptor);
             var stringToken = tokenHandler.WriteToken(token);
-
-            //setup cookie
+            
             httpContext.Response.Cookies.Append("jwt", stringToken, new CookieOptions
             {
                 Expires = DateTime.Now.AddDays(1)
@@ -51,8 +49,20 @@ public class Auth : IAuth
 
             return Results.Ok();
         }
-        //Se verifico la sua hash allora proseguo ed emetto un token
-        //Sennò ritorno 401
         return Results.Unauthorized();
+    }
+
+    public string Authenticate(IConfiguration _config)
+    {
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+            _config["Jwt:Issuer"],
+            null,
+            expires: DateTime.Now.AddMinutes(120),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
