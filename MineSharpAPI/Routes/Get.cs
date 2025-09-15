@@ -29,9 +29,10 @@ public class Get
             return result;
         });
 
-        app.MapGet("/api/runners/GetMasterRunnerToken", async () =>
+        app.MapGet("/api/runners/GetMasterRunnerToken", async (IAuth auth) =>
         {
-            
+            var token = auth.Authenticate(builder.Configuration);
+            return token;
         }).RequireAuthorization();
 
         app.MapGet("/api/runners/GetSingularToken", async () =>

@@ -31,12 +31,9 @@ public class program
         
         Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
         RegisterServices(builder);
-        
-        
-        
+
         var app = builder.Build();
-        var auth = app.Services.GetService<IAuth>();
-        auth.Authenticate(app.Configuration);
+        
         using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();

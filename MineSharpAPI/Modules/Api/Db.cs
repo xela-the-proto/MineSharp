@@ -71,3 +71,14 @@ public record RunnerDB
     [Required]
     public string Token { get; set; }
 }
+
+public record APIKeysDB
+{
+    [StringLength(50)]  
+    [Required]
+    [Key]
+    public string keyName { get; set; }
+    [Required]
+    public string Key { get; set; }
+    
+}

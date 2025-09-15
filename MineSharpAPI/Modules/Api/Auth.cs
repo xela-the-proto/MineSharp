@@ -35,8 +35,7 @@ public class Auth : IAuth
                 Expires = DateTime.Now.AddDays(1),
                 Issuer = issuer,
                 Audience = audience,
-                SigningCredentials =
-                    new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokendescriptor);
@@ -56,12 +55,11 @@ public class Auth : IAuth
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
+        var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
         var token = new JwtSecurityToken(_config["Jwt:Issuer"],
             _config["Jwt:Issuer"],
-            null,
-            expires: DateTime.Now.AddMinutes(120),
-            signingCredentials: credentials);
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
