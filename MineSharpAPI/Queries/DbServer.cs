@@ -11,13 +11,13 @@ namespace MineSharpAPI.Queries;
 public class DbServer : IDbUser
 {
 
-    public UserDB GetUser(DatabaseContext context, UserDB inquilino)
+    public UserTable GetUser(DatabaseContext context, UserTable inquilino)
     {
-        UserDB user = null;
+        UserTable user = null;
         try
         {
             var file = "x";
-            var query =  context.User.First(s => s.UserId == inquilino.UserId);
+            var query =  context.User.First(s => s.Id == inquilino.Id);
             return query;
         }
         catch (Exception e)
@@ -30,17 +30,18 @@ public class DbServer : IDbUser
     public void SetUser(DatabaseContext context, LoginBody userLogin)
     {
         var hash = Hashing.HashString(userLogin.password);
-        var user = new UserDB()
+        var user = new UserTable()
         {
-            UserId = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid().ToString(),
             Email = userLogin.email,
             PasswordHash = hash
         };
         context.User.Add(user);
         context.SaveChanges();
     }
-    public void RmUser(DatabaseContext context, UserDB user)
+    public void RmUser(DatabaseContext context, UserTable user)
     {
+        context.User.Remove(user);
         throw new NotImplementedException();
     }
 }

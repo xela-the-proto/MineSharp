@@ -7,7 +7,7 @@ namespace MineSharpAPI.Modules.Interfaces;
  */
 public interface IDbUser
 {
-    UserDB GetUser(DatabaseContext context, UserDB user);
-    void RmUser(DatabaseContext context, UserDB user);
+    UserTable GetUser(DatabaseContext context, UserTable user);
+    void RmUser(DatabaseContext context, UserTable user);
     public void SetUser(DatabaseContext context, LoginBody user);
 }

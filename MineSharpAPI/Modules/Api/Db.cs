@@ -23,10 +23,10 @@ public class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         //Per evitare di dover controllare l'unicità della mail ad ogny query
-        builder.Entity<UserDB>(entity => {
+        builder.Entity<UserTable>(entity => {
             entity.HasIndex(e => e.Email).IsUnique();
         });
-        builder.Entity<UserDB>().HasData();
+        builder.Entity<UserTable>().HasData();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -35,8 +35,10 @@ public class DatabaseContext : DbContext
     }
     
     //Registro i Dbset così EF sa cosa mettere nel db
-    public DbSet<UserDB> User { get; set; }
-    public DbSet<RunnerDB> Runner { get; set; }
+    public DbSet<UserTable> User { get; set; }
+    public DbSet<RunnerTable> Runner { get; set; }
+    public DbSet<APIKeysTable> ApiKeys { get; set; }
+    
 }
 
 /*
@@ -44,22 +46,24 @@ public class DatabaseContext : DbContext
  *  TABLES
  * -------------------------------------------
  */
-public record UserDB
+public record UserTable
 {
     [StringLength(36)]
     [Required]
-    public string UserId { get; set; }
+    [Key]
+    public string Id { get; set; }
     [StringLength(40)]
     [Required]
-    [Key] 
     public string Email { get; set; }
     [StringLength(97)]
     [Required] 
     public string PasswordHash { get; set; }
+    public ICollection<APIKeysTable>  APIKeys { get; set; }
+    public ICollection<RunnerTable>  Runners { get; set; }
 }
 
 
-public record RunnerDB
+public record RunnerTable
 {
     [StringLength(36)]
     [Required]
@@ -70,9 +74,13 @@ public record RunnerDB
     public string RunnerPublicIp { get; set; }
     [Required]
     public string Token { get; set; }
+    [Required]
+    [ForeignKey("UserTable")]
+    public string OwnerID { get; set; }
+
 }
 
-public record APIKeysDB
+public record APIKeysTable
 {
     [StringLength(50)]  
     [Required]
@@ -80,5 +88,7 @@ public record APIKeysDB
     public string keyName { get; set; }
     [Required]
     public string Key { get; set; }
-    
+    [Required]
+    [ForeignKey("UserTable")]
+    public string OwnerID { get; set; }
 }
