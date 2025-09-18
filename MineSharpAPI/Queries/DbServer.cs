@@ -11,9 +11,9 @@ namespace MineSharpAPI.Queries;
 public class DbServer : IDbUser
 {
 
-    public UserTable GetUser(DatabaseContext context, UserTable inquilino)
+    public User GetUser(DatabaseContext context, User inquilino)
     {
-        UserTable user = null;
+        User user = null;
         try
         {
             var file = "x";
@@ -30,7 +30,7 @@ public class DbServer : IDbUser
     public void SetUser(DatabaseContext context, LoginBody userLogin)
     {
         var hash = Hashing.HashString(userLogin.password);
-        var user = new UserTable()
+        var user = new User()
         {
             Id = Guid.NewGuid().ToString(),
             Email = userLogin.email,
@@ -39,7 +39,7 @@ public class DbServer : IDbUser
         context.User.Add(user);
         context.SaveChanges();
     }
-    public void RmUser(DatabaseContext context, UserTable user)
+    public void RmUser(DatabaseContext context, User user)
     {
         context.User.Remove(user);
         throw new NotImplementedException();

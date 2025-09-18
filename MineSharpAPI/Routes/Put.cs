@@ -24,7 +24,7 @@ public class Put
         }).RequireAuthorization();
         */
 
-        app.MapPut("/api/runners/register", async([FromBody]RunnerTable runnerDetails, HttpContext context, DatabaseContext db) =>
+        app.MapPut("/api/runners/register", async([FromBody]Runners runnerDetails, HttpContext context, DatabaseContext db) =>
         {
             
         });

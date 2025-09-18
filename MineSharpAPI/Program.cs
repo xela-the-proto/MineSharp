@@ -37,12 +37,12 @@ public class program
         using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            if (!context.Database.EnsureCreated())
+            if (context.Database.EnsureCreated())
             {
                 context.Database.Migrate();
             }
 
-            if (context.User.Count() == 0)
+            if (!context.User.Any())
             { 
                 var db = serviceScope.ServiceProvider.GetRequiredService<IDbUser>();
                 db.SetUser(context, new LoginBody()

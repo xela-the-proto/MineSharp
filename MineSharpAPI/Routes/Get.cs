@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
@@ -15,12 +17,14 @@ public class Get
             var result = dbInquilino.GetInquilino(db, inquilino);
             return result;
         }).RequireAuthorization();
-
-        app.MapGet("/debug", () =>
-        {
-            return AppContext.BaseDirectory;
-        });
         */
+        app.MapGet("/debug", (HttpContext http, DatabaseContext database) =>
+        {
+            var user = http.User.Claims.ToList();
+            return user[1].Value; 
+            
+        }).RequireAuthorization();
+        
         
         //I bodies servono per poter prendere dal body della richiesta una classe già preparata da poi manipoalre
         app.MapGet("/auth/", async ([FromBody] LoginBody user, HttpContext http, DatabaseContext db, IAuth auth, [FromServices]IDbUser userTable) =>
@@ -29,15 +33,21 @@ public class Get
             return result;
         });
 
-        app.MapGet("/api/runners/GetMasterRunnerToken", async (IAuth auth) =>
-        {
-            var token = auth.Authenticate(builder.Configuration);
+        app.MapGet("/api/runners/GetAPIToken", async ([FromBody]APIKeyCreationBody key ,IAuth auth, HttpContext context, DatabaseContext db) =>
+        { 
+            var token = auth.GenApiKey();
+            await db.ApiKeys.AddAsync(new APIKeys()
+            {
+                Key = key.Key,
+                keyName = key.keyName,
+                OwnerID = ""
+            });
             return token;
         }).RequireAuthorization();
 
         app.MapGet("/api/runners/GetSingularToken", async () =>
         {
-
+            
         }).RequireAuthorization();
     }
 }

@@ -23,10 +23,10 @@ public class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         //Per evitare di dover controllare l'unicità della mail ad ogny query
-        builder.Entity<UserTable>(entity => {
+        builder.Entity<User>(entity => {
             entity.HasIndex(e => e.Email).IsUnique();
         });
-        builder.Entity<UserTable>().HasData();
+        builder.Entity<User>().HasData();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -34,19 +34,13 @@ public class DatabaseContext : DbContext
         optionsBuilder.UseSqlite();
     }
     
-    //Registro i Dbset così EF sa cosa mettere nel db
-    public DbSet<UserTable> User { get; set; }
-    public DbSet<RunnerTable> Runner { get; set; }
-    public DbSet<APIKeysTable> ApiKeys { get; set; }
+    public DbSet<User> User { get; set; }
+    public DbSet<Runners> Runner { get; set; }
+    public DbSet<APIKeys> ApiKeys { get; set; }
     
 }
 
-/*
- * -------------------------------------------
- *  TABLES
- * -------------------------------------------
- */
-public record UserTable
+public record User
 {
     [StringLength(36)]
     [Required]
@@ -58,29 +52,28 @@ public record UserTable
     [StringLength(97)]
     [Required] 
     public string PasswordHash { get; set; }
-    public ICollection<APIKeysTable>  APIKeys { get; set; }
-    public ICollection<RunnerTable>  Runners { get; set; }
+    
 }
 
 
-public record RunnerTable
+public record Runners
 {
     [StringLength(36)]
     [Required]
     [Key]
-    public string RunnerId { get; set; }
+    public string Id { get; set; }
     [StringLength(15)]
     [Required]
-    public string RunnerPublicIp { get; set; }
+    public string PublicIp { get; set; }
     [Required]
     public string Token { get; set; }
     [Required]
-    [ForeignKey("UserTable")]
+    [ForeignKey("User")]
     public string OwnerID { get; set; }
 
 }
 
-public record APIKeysTable
+public record APIKeys
 {
     [StringLength(50)]  
     [Required]
@@ -89,6 +82,6 @@ public record APIKeysTable
     [Required]
     public string Key { get; set; }
     [Required]
-    [ForeignKey("UserTable")]
+    [ForeignKey("User")]
     public string OwnerID { get; set; }
 }

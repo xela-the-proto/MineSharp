@@ -3,9 +3,9 @@ using MineSharpAPI.Api;
 
 namespace MineSharpAPI.Modules.Bodies;
 
-/*
- * Record per le richieste di get put ecc. speigo in quei file il perchè
- */
+/// <summary>
+///Login body for email and password only
+/// <summary>
 public record LoginBody
 {
     public string email { get; set; }
@@ -24,4 +24,13 @@ public record RunnerBody
     public int ram { get; set; }
     
     public ServerPlatform  platform { get; set; }
+}
+
+public record APIKeyCreationBody
+{
+    public string keyName { get; set; }
+
+    public string Key { get; set; }
+
+    public string OwnerID { get; set; }
 }
