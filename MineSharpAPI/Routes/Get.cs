@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
@@ -21,8 +22,7 @@ public class Get
         app.MapGet("/debug", (HttpContext http, DatabaseContext database) =>
         {
             var user = http.User.Claims.ToList();
-            return user[1].Value; 
-            
+            return http.User.Claims.ToList()[1].Value;
         }).RequireAuthorization();
         
         
@@ -32,18 +32,6 @@ public class Get
             var result = auth.Authenticate(db, user, builder, http).Result;
             return result;
         });
-
-        app.MapGet("/api/runners/GetAPIToken", async ([FromBody]APIKeyCreationBody key ,IAuth auth, HttpContext context, DatabaseContext db) =>
-        { 
-            var token = auth.GenApiKey();
-            await db.ApiKeys.AddAsync(new APIKeys()
-            {
-                Key = key.Key,
-                keyName = key.keyName,
-                OwnerID = ""
-            });
-            return token;
-        }).RequireAuthorization();
 
         app.MapGet("/api/runners/GetSingularToken", async () =>
         {

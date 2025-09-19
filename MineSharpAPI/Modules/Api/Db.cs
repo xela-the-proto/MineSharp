@@ -38,7 +38,13 @@ public class DatabaseContext : DbContext
     public DbSet<Runners> Runner { get; set; }
     public DbSet<APIKeys> ApiKeys { get; set; }
     
+    public void OnDbSavingChanges(object? sender, SavingChangesEventArgs args)
+    {
+        
+    }
 }
+
+
 
 public record User
 {

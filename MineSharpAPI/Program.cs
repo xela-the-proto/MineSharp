@@ -5,14 +5,11 @@ using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Routes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Queries;
-using MySqlConnector;
 using Serilog;
 
 public class program
@@ -33,13 +30,14 @@ public class program
         RegisterServices(builder);
 
         var app = builder.Build();
+
         
         using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
             if (context.Database.EnsureCreated())
             {
-                context.Database.Migrate();
+                Log.Warning("Database migrated and created!");
             }
 
             if (!context.User.Any())
@@ -51,6 +49,16 @@ public class program
                     password = "admin"
                 });
             }
+
+            context.SavedChanges += (sender, eventArgs) =>
+            {
+
+                Log.Warning($"Database saved {eventArgs.EntitiesSavedCount} entities");
+            };
+            context.SavingChanges += (sender, eventArgs) =>
+            {
+                Log.Warning("Syncyng db to EF queries");
+            };
         }
       
         app.UseHttpsRedirection();
@@ -95,17 +103,18 @@ public class program
     public static void RegisterServices(WebApplicationBuilder builder)
     {
         var csb = new SQLiteConnectionStringBuilder(builder.Configuration["ConnectionStrings:postgres"]);
-        if (csb.ConnectionString == "")
+        if (csb.ConnectionString == "" && !File.Exists("Local.sqlite"))
         {
             csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + @"\Local.sqlite";
+            builder.Configuration["ConnectionStrings:postgres"] = csb.ConnectionString;
             SQLiteConnection.CreateFile(Environment.CurrentDirectory +  @"\Local.sqlite");
-            
         }
         
          /*
          * Singletons
          */
         builder.Services.AddSingleton<IAuth, Auth>();
+        builder.Services.AddScoped<IAuth, Auth>();
         builder.Services.AddSingleton<IDbUser, DbServer>();
         /*
          * Redis cache
@@ -124,6 +133,7 @@ public class program
         builder.Services.AddDbContext<DatabaseContext>(opt =>
         {
             opt.UseSqlite(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
+
         });
 
         builder.WebHost.UseUrls("http://0.0.0.0:5000");

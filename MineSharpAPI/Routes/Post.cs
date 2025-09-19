@@ -1,10 +1,16 @@
 ﻿using System.Diagnostics;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
+using Microsoft.AspNetCore.Http.HttpResults;
 using MineSharpAPI.Modules.Bodies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Api;
+using MineSharpAPI.Modules.Interfaces;
 using PusherServer;
+using Serilog;
 
 namespace MineSharpAPI.Routes;
 
@@ -33,6 +39,10 @@ public class Post
             runner.Start();
         });
         
+        app.MapPost("/api/runners/GetAPIToken", async (HttpContext http, DatabaseContext db) =>
+        {
+            Tokens.CreateApiToken(http, db);
+        }).RequireAuthorization();
         
     }
 }

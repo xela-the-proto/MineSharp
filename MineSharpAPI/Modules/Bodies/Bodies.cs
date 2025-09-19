@@ -25,12 +25,3 @@ public record RunnerBody
     
     public ServerPlatform  platform { get; set; }
 }
-
-public record APIKeyCreationBody
-{
-    public string keyName { get; set; }
-
-    public string Key { get; set; }
-
-    public string OwnerID { get; set; }
-}
