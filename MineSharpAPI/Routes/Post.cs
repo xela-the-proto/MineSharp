@@ -41,7 +41,8 @@ public class Post
         
         app.MapPost("/api/runners/GetAPIToken", async (HttpContext http, DatabaseContext db) =>
         {
-            Tokens.CreateApiToken(http, db);
+            var result = Tokens.CreateApiToken(http, db);
+            return result.Result;
         }).RequireAuthorization();
         
     }

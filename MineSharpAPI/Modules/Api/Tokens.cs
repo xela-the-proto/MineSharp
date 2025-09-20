@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System.Data;
+using System.Net;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Interfaces;
 using Serilog;
 
@@ -20,21 +23,26 @@ public class Tokens
             using var reader = new StreamReader(http.Request.Body);
             await reader.BaseStream.ReadAsync(buffer, 0, buffer.Length);
 
-            await db.ApiKeys.AddAsync(new APIKeys()
+            var apiKey = new APIKeys()
             {
                 Key = token,
                 keyName = Encoding.ASCII.GetString(buffer),
                 OwnerID = user
-            });
-            await db.SaveChangesAsync();
-
-            return Results.Ok(token);
+            };
+            if (!db.ApiKeys.ContainsAsync(apiKey).Result)
+            {
+                await db.ApiKeys.AddAsync(apiKey);
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                throw new DataException("API key already exists with that name");
+            }
+            return Results.Ok();
         }
         catch (Exception e)
         {
-            Log.Warning(e, "Db update error, refer to stacktrace");
-            return Results.InternalServerError();
-
+            return Results.InternalServerError(e.Message);
         }
     }
 }
