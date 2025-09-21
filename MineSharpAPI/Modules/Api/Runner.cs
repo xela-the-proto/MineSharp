@@ -1,4 +1,6 @@
-﻿namespace MineSharpAPI.Api;
+﻿using MineSharpAPI.Api;
+
+namespace MineSharpAPI.Modules.Api;
 
 public class Runner
 {

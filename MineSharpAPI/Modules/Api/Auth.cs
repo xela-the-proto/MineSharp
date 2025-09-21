@@ -4,11 +4,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Bodies;
-using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Interfaces;
-using Serilog;
 
-namespace MineSharpAPI.Api;
+namespace MineSharpAPI.Modules.Api;
 
 public class Auth : IAuth
 {
@@ -19,7 +17,7 @@ public class Auth : IAuth
         WebApplicationBuilder builder, HttpContext httpContext)
     {
         var user = db.User.FirstOrDefault(s => s.Email == inquilino.email);
-        if (user == null || !Hashing.VerifyHash(inquilino.password, user.PasswordHash))
+        if (user == null || !Hashing.HashingUtils.VerifyHash(inquilino.password, user.PasswordHash))
         {
             return Results.Unauthorized();
         }

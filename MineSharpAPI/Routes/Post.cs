@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Api;
+using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Interfaces;
 using PusherServer;
 using Serilog;
@@ -39,11 +40,12 @@ public class Post
             runner.Start();
         });
         
-        app.MapPost("/api/runners/GetAPIToken", async (HttpContext http, DatabaseContext db) =>
+        app.MapPost("/api/runners/GenAPIToken", async (HttpContext http, DatabaseContext db) =>
         {
             var result = Tokens.CreateApiToken(http, db);
             return result.Result;
         }).RequireAuthorization();
+        
         
     }
 }

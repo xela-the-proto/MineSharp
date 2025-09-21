@@ -1,11 +1,10 @@
 ﻿using System.Data;
-using System.Net;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using MineSharpAPI.Api;
 using MineSharpAPI.Modules.Interfaces;
-using Serilog;
 
-namespace MineSharpAPI.Api;
+namespace MineSharpAPI.Modules.Api;
 
 public class Tokens
 {

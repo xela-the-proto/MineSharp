@@ -1,13 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using MineSharpAPI.Modules.Bodies;
-using MineSharpAPI.Modules.Hashing;
-using MineSharpAPI.Modules.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
-using DbUpdateException = System.Data.Entity.Infrastructure.DbUpdateException;
 
-namespace MineSharpAPI.Api;
+namespace MineSharpAPI.Modules.Api;
 /*
  * -------------------------------------------
  *  ORM PER INQUILINO

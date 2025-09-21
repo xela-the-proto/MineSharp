@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Queries;
 using Serilog;

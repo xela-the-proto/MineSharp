@@ -1,6 +1,7 @@
 ﻿using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using MineSharpAPI.Modules.Api;
 using Serilog;
 
 namespace MineSharpAPI.Api;

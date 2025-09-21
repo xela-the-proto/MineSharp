@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using MineSharpAPI.Api;
+using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Helpers;
@@ -29,7 +30,7 @@ public class DbServer : IDbUser
 
     public void SetUser(DatabaseContext context, LoginBody userLogin)
     {
-        var hash = Hashing.HashString(userLogin.password);
+        var hash = HashingUtils.HashString(userLogin.password);
         var user = new User()
         {
             Id = Guid.NewGuid().ToString(),

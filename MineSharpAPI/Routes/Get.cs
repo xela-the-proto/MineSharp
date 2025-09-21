@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
 
@@ -32,10 +33,5 @@ public class Get
             var result = auth.Authenticate(db, user, builder, http).Result;
             return result;
         });
-
-        app.MapGet("/api/runners/GetSingularToken", async () =>
-        {
-            
-        }).RequireAuthorization();
     }
 }

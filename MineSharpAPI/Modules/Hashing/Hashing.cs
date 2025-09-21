@@ -3,7 +3,7 @@ using MineSharpAPI.Api;
 
 namespace MineSharpAPI.Modules.Hashing;
 
-public class Hashing
+public class HashingUtils
 {
     //Valori per l'hash
     private const int salt_size = 16;

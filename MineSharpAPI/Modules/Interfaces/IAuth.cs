@@ -1,4 +1,5 @@
 ﻿using MineSharpAPI.Api;
+using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 
 namespace MineSharpAPI.Modules.Interfaces;
