@@ -1,7 +1,4 @@
-﻿using MineSharpAPI.Modules.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-
-namespace MineSharpAPI.Api;
+﻿namespace MineSharpAPI.Routes;
 
 public class Delete
 {

@@ -1,6 +1,5 @@
 using System.Data.SQLite;
 using System.Text;
-using MineSharpAPI.Api;
 using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Routes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

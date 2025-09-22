@@ -1,6 +1,10 @@
 ﻿
 using System.Diagnostics;
+using Common.Converters;
+using Common.Enums;
 using Common.Json.Structures;
+using Microsoft.AspNetCore.Mvc;
+using MineSharpAPI.Modules.Bodies;
 using Runner.DownloadManager;
 using Runner.RunnerManager;
 using Serilog;
@@ -14,13 +18,18 @@ class Program
     public static string ABSOLUTE_SERVER_PATH;
     public static string ABSOLUTE_RUNNER_PATH;
     public static RunnerPropertiesStructure RUNNER_PROPERTIES;
-    static void Main(string[] args)
+    static async Task Main()
     {
-        var tuple = ArgsParser.ParseArgs(args);
-        var listOfFlags = tuple.Item1;
-        var listOfValues = tuple.Item2;
+        var args = ArgsParser.BuildArgs(new RunnerBody()
+        {
+            path = "/home/alex/serverstest/server2",
+            platform = ServerPlatform.VANILLA,
+            ram = 1024,
+            remoteUrl = "http://localhost:5001",
+            version = "1.21"
+        });
         
-        ConfigChecks(listOfFlags, listOfValues);
+        ConfigChecks(args);
         
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
@@ -28,17 +37,44 @@ class Program
             .MinimumLevel.Verbose()
             .CreateLogger();
         
-        DownloadDispatch.DownloadJar(listOfValues[listOfFlags.IndexOf("-v")],listOfValues[listOfFlags.IndexOf("-f")]);
+        var javaArgs = ConvertFlagsToJavaFlags.ConvertList(args);
 
-        var runner = new ServerRunner();
-        runner.startServerProcess(listOfFlags,listOfValues,listOfValues[listOfFlags.IndexOf("-f")]);
+        var builder = WebApplication.CreateBuilder();
+        
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(name: "frontend",
+                policy  =>
+                {
+                    policy.WithOrigins("http://localhost:5000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+        });
+
+        var app = builder.Build();
+        app.UseCors();
+
+
+        app.MapPost("/startServer",([FromBody]Tuple<List<string>, List<string>> tuple) =>
+        {
+            DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1],args[args.IndexOf("-f") + 1]);
+            var runner = new ServerRunner();
+            
+            runner.startServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
+            return Results.Ok();
+        });
+        
+        Log.Information("Runner in ascolto su http://localhost:5001/");
+        await app.RunAsync("http://localhost:5001");
+        
     }
 
 
-    public static void ConfigChecks(List<string> listOfFlags, List<string> listOfValues)
+    public static void ConfigChecks(List<string> args)
     {
-        ABSOLUTE_SERVER_PATH = listOfValues[listOfFlags.IndexOf("-f")].Substring(0, 
-            listOfValues[listOfFlags.IndexOf("-f")].LastIndexOf(Path.DirectorySeparatorChar));
+        ABSOLUTE_SERVER_PATH = args[args.IndexOf("-f") + 1];
+        //.Substring(0, args[args.IndexOf("-f") + 1].LastIndexOf(Path.DirectorySeparatorChar));
 
         if (!Directory.Exists(ABSOLUTE_SERVER_PATH))
         {
@@ -56,7 +92,6 @@ class Program
             Log.Verbose("No auth token!");
             Log.Fatal("Runner succesfully installed! Please enter the token in the config file before running again!");
             var local = Process.GetCurrentProcess();
-            
         }
     }
     

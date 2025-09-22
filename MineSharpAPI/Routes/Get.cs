@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using System.Text;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
 
-namespace MineSharpAPI.Api;
+namespace MineSharpAPI.Routes;
 
 public class Get
 {

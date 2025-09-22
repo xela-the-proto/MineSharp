@@ -7,12 +7,12 @@ namespace Runner.RunnerManager;
 
 public class ServerRunner
 {
-    public void startServerProcess(List<string> flags ,List<string> values ,string workDir)
+    public void startServerProcess(List<string> args,string workdir)
     {
         try
         {
             Log.Verbose("Building process");
-            var process = ProcessInfoHelper.BuildStarterProcess("java", flags, values, workDir,
+            var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true,true,true,false);
             
             Log.Verbose("Creating canc token");

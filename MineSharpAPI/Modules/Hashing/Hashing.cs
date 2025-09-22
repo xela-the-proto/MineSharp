@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using MineSharpAPI.Api;
 
 namespace MineSharpAPI.Modules.Hashing;
 

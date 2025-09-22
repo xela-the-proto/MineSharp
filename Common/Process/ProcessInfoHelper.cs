@@ -18,11 +18,14 @@ public class ProcessInfoHelper
     /// <param name="hookIntoStdIn">Make the process <c>StandardInput</c> accessible with events</param>
     /// <param name="useShellExecute">Whether to use the operating system shell to start the process.</param>
     /// <returns></returns>
-    public static System.Diagnostics.Process BuildStarterProcess(string command, List<string> flags, List<string> values
+    public static System.Diagnostics.Process BuildStarterProcess(string command, List<string> flags
         , string workDir, bool hookIntoStdErr = true, bool hookIntoStdOut = true, bool hookIntoStdIn = true, bool useShellExecute = true)
     {
-        string args = BuildArguments(ConvertFlagsToJavaFlags.ConvertList(flags, values));
-        
+        string args = "";
+        for (int i = 0; i < flags.Count; i++)
+        {
+            args += flags[i] + " ";
+        }
         var startInfo = new ProcessStartInfo
         {
             FileName = command,

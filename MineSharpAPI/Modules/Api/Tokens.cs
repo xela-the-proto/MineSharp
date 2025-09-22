@@ -1,8 +1,8 @@
 ﻿using System.Data;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using MineSharpAPI.Api;
 using MineSharpAPI.Modules.Interfaces;
+using Serilog;
 
 namespace MineSharpAPI.Modules.Api;
 
@@ -10,7 +10,7 @@ public class Tokens
 {
     public static async Task<IResult> CreateApiToken(HttpContext http, DatabaseContext db)
     {
-
+        Log.Debug("Import IAuth");
         var auth = http.RequestServices.GetRequiredService<IAuth>();
 
         try
@@ -18,10 +18,16 @@ public class Tokens
             byte[] buffer = new byte[2048];
             var token = auth.GenApiKey();
             var user = http.User.Claims.ToList()[1].Value;
-
-            using var reader = new StreamReader(http.Request.Body);
-            await reader.BaseStream.ReadAsync(buffer, 0, buffer.Length);
-
+            Log.Debug("Start buffer read");
+            using (var reader = new StreamReader(http.Request.Body))
+            {
+                var readBytes =  reader.BaseStream.ReadAsync(buffer, 0, buffer.Length);
+                if (readBytes.Result != reader.BaseStream.Length)
+                {
+                    throw new EndOfStreamException("Read too many bytes than expected");
+                }
+            }
+            Log.Debug("Buffer disposed");
             var apiKey = new APIKeys()
             {
                 Key = token,
@@ -35,6 +41,7 @@ public class Tokens
             }
             else
             {
+                
                 throw new DataException("API key already exists with that name");
             }
             return Results.Ok();

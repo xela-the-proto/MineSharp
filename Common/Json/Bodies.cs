@@ -1,5 +1,4 @@
 ﻿using Common.Enums;
-using MineSharpAPI.Api;
 
 namespace MineSharpAPI.Modules.Bodies;
 
@@ -17,6 +16,10 @@ public record LoginBody
 /// </summary>
 public record RunnerBody
 {
+    /// <summary>
+    ///Note to self for next times, DO NOT MAKE THIS UPPERCASE, we leverage reflection
+    /// to get the names of the variables to then be able to match them to the vars
+    /// </summary>
     public string version { get; set; }
     
     public string path  { get; set; }
@@ -24,4 +27,6 @@ public record RunnerBody
     public int ram { get; set; }
     
     public ServerPlatform  platform { get; set; }
+    
+    public string remoteUrl { get; set; }
 }

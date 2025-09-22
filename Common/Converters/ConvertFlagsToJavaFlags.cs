@@ -2,7 +2,7 @@
 
 public class ConvertFlagsToJavaFlags
 {
-    public static List<string> ConvertList(List<string> flags, List<string> values)
+    public static List<string> ConvertList(List<string> flags)
     {
         List<string> javaFlags = new List<string>();
         //We automatically skip by 1
@@ -12,21 +12,16 @@ public class ConvertFlagsToJavaFlags
             switch (flag)
             {
                 case "-f":
-                    javaFlags.Add($"-jar {values[i]}");
+                    javaFlags.Add($"-jar {flags[i + 1]}/server.jar");
                     break;
                 case "-r":
-                    javaFlags.Add($"-Xmx{values[i]}M");
-                    javaFlags.Add($"-Xms{values[i]}M");
+                    javaFlags.Add($"-Xmx {flags[i + 1]}M");
+                    javaFlags.Add($"-Xms {flags[i + 1]}M");
                     break;
             }
             i++;
         }
         
         return javaFlags;
-    }
-
-    public static List<string> ConvertArray(string[] flags, string[] values)
-    {
-        return ConvertList(flags.ToList(),values.ToList());
     }
 }
