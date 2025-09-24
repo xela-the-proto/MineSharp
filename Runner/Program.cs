@@ -23,7 +23,7 @@ class Program
         var args = ArgsParser.BuildArgs(new RunnerBody()
         {
             path = "/home/alex/serverstest/server2",
-            platform = ServerPlatform.VANILLA,
+            platform = "VANILLA",
             ram = 1024,
             remoteUrl = "http://localhost:5001",
             version = "1.21"
@@ -40,23 +40,11 @@ class Program
         var javaArgs = ConvertFlagsToJavaFlags.ConvertList(args);
 
         var builder = WebApplication.CreateBuilder();
-        
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy(name: "frontend",
-                policy  =>
-                {
-                    policy.WithOrigins("http://localhost:5000")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
-        });
 
         var app = builder.Build();
-        app.UseCors();
 
 
-        app.MapPost("/startServer",([FromBody]Tuple<List<string>, List<string>> tuple) =>
+        app.MapPost("/startServer",([FromBody]RunnerBody tuple) =>
         {
             DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1],args[args.IndexOf("-f") + 1]);
             var runner = new ServerRunner();

@@ -15,18 +15,16 @@ public class Tokens
 
         try
         {
-            byte[] buffer = new byte[2048];
+            
             var token = auth.GenApiKey();
             var user = http.User.Claims.ToList()[1].Value;
             Log.Debug("Start buffer read");
-            using (var reader = new StreamReader(http.Request.Body))
-            {
-                var readBytes =  reader.BaseStream.ReadAsync(buffer, 0, buffer.Length);
-                if (readBytes.Result != reader.BaseStream.Length)
-                {
-                    throw new EndOfStreamException("Read too many bytes than expected");
-                }
-            }
+            var reader = new StreamReader(http.Request.Body);
+            
+            byte[] buffer = new byte[reader.BaseStream.Length]; 
+            await reader.BaseStream.ReadExactlyAsync(buffer);
+            
+            reader.Dispose();
             Log.Debug("Buffer disposed");
             var apiKey = new APIKeys()
             {
@@ -48,7 +46,9 @@ public class Tokens
         }
         catch (Exception e)
         {
-            return Results.InternalServerError(e.Message);
+            throw;
+            return Results.InternalServerError();
+            
         }
     }
 }

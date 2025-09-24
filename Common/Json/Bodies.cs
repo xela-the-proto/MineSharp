@@ -26,7 +26,7 @@ public record RunnerBody
     
     public int ram { get; set; }
     
-    public ServerPlatform  platform { get; set; }
+    public string  platform { get; set; }
     
     public string remoteUrl { get; set; }
 }

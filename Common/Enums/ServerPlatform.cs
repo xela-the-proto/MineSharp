@@ -20,6 +20,18 @@ public class ServerPlatform
     public static ServerPlatform SPIGOT => new("SPIGOT");
     public static ServerPlatform FABRIC => new("FABRIC");
     public static ServerPlatform FORGE => new("FORGE");
+
+    public static ServerPlatform getPlatformFromString(string platform)
+    {
+        platform = platform.ToLower();
+
+        switch (typeof(ServerPlatform))
+        {
+        }
+
+        return ServerPlatform.FABRIC;
+
+    }
     
    
 }

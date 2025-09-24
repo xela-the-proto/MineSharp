@@ -26,7 +26,7 @@ public class Post
             
             using (var client = new RestClient(body.remoteUrl))
             {
-                client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
+                await client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
             }
             /*
             var runner = new Process();

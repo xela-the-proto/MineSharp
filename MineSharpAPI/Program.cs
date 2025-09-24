@@ -37,7 +37,7 @@ public class program
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
             if (context.Database.EnsureCreated())
             {
-                Log.Warning("Database migrated and created!");
+                Log.Warning("Database migrated and created");
             }
 
             if (!context.User.Any())
@@ -102,12 +102,12 @@ public class program
 
     public static void RegisterServices(WebApplicationBuilder builder)
     {
-        var csb = new SQLiteConnectionStringBuilder(builder.Configuration["ConnectionStrings:postgres"]);
-        if (csb.ConnectionString == "" && !File.Exists("Local.sqlite"))
+        var csb = new SQLiteConnectionStringBuilder();
+        if (!File.Exists("Local.sqlite"))
         {
-            csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + @"\Local.sqlite";
-            builder.Configuration["ConnectionStrings:postgres"] = csb.ConnectionString;
-            SQLiteConnection.CreateFile(Environment.CurrentDirectory +  @"\Local.sqlite");
+            csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + Path.DirectorySeparatorChar +"Local.sqlite";
+            //builder.Configuration["ConnectionStrings:postgres_lin"] = csb.ConnectionString;
+            SQLiteConnection.CreateFile(Environment.CurrentDirectory + Path.DirectorySeparatorChar + "Local.sqlite");
         }
         
          /*
