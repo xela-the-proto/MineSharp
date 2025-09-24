@@ -29,5 +29,11 @@ public class Get
             var result = auth.Authenticate(db, user, builder, http).Result;
             return result;
         });
+
+        app.MapGet("/api/runners/GetAPITokenAuth", async (HttpContext http, DatabaseContext db) =>
+        {
+            var result = Tokens.ValidateApiToken(http, db,builder);
+            return result.Result;
+        }).RequireAuthorization();
     }
 }

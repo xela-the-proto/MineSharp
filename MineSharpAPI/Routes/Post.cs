@@ -41,7 +41,7 @@ public class Post
         app.MapPost("/api/Runners/CreateServer", async ([FromBody]RunnerBody body, HttpContext context, DatabaseContext db) =>
         {
             var runner = new Process();
-            runner.StartInfo.FileName = program.runnerPath;
+            runner.StartInfo.FileName = Program.runnerPath;
             runner.StartInfo.Arguments = "-v " + body.version + " -f " + body.path + " -r " + body.ram ;
             runner.StartInfo.CreateNoWindow = false;
             runner.StartInfo.UseShellExecute = true;    

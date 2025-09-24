@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Interfaces;
 using Serilog;
 
@@ -12,24 +13,24 @@ public class Tokens
     {
         Log.Debug("Import IAuth");
         var auth = http.RequestServices.GetRequiredService<IAuth>();
-
+        string user = "";
         try
         {
-            
+            string body = "";
             var token = auth.GenApiKey();
-            var user = http.User.Claims.ToList()[1].Value;
+            user = http.User.Claims.ToList()[1].Value;
             Log.Debug("Start buffer read");
-            var reader = new StreamReader(http.Request.Body);
+
+            using (var reader = new StreamReader(http.Request.Body,Encoding.UTF8))
+            {
+                body = reader.ReadToEndAsync().Result;
+            }
             
-            byte[] buffer = new byte[reader.BaseStream.Length]; 
-            await reader.BaseStream.ReadExactlyAsync(buffer);
-            
-            reader.Dispose();
             Log.Debug("Buffer disposed");
             var apiKey = new APIKeys()
             {
                 Key = token,
-                keyName = Encoding.ASCII.GetString(buffer),
+                keyName = body,
                 OwnerID = user
             };
             if (!db.ApiKeys.ContainsAsync(apiKey).Result)
@@ -39,16 +40,50 @@ public class Tokens
             }
             else
             {
-                
                 throw new DataException("API key already exists with that name");
             }
             return Results.Ok();
         }
-        catch (Exception e)
+        catch (DataException e)
         {
-            throw;
-            return Results.InternalServerError();
+            return Results.InternalServerError($"Api key already exists with that name for user id {user}");
+        }
+    }
+    public static async Task<IResult> ValidateApiToken(HttpContext http, DatabaseContext db, WebApplicationBuilder builder)
+    {
+        Log.Debug("Import IAuth");
+        var auth = http.RequestServices.GetRequiredService<IAuth>();
+        string user = "";
+        try
+        {
+            string body = "";
+            var token = auth.GenApiKey();
+            user = http.User.Claims.ToList()[1].Value;
+            Log.Debug("Start buffer read");
+
+            using (var reader = new StreamReader(http.Request.Body,Encoding.UTF8))
+            {
+                body = reader.ReadToEndAsync().Result;
+            }
             
+            Log.Debug("Buffer disposed");
+            var apiKey = new APIKeys()
+            {
+                Key = token,
+                keyName = body,
+                OwnerID = user
+            };
+            var result = db.ApiKeys.First(x => x.OwnerID == user && x.Key == body);
+            /*
+            foreach (var key in result)
+            {
+                Log.Debug(key.Key + " " + key.OwnerID);
+            }*/
+            return Results.Ok(auth.AuthenticateViaAPIKey(db,result.Key,builder,http).Result);
+        }
+        catch (DataException e)
+        {
+            return Results.InternalServerError();
         }
     }
 }

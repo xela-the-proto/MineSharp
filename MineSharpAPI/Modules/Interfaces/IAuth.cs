@@ -7,6 +7,10 @@ namespace MineSharpAPI.Modules.Interfaces;
  */
 public interface IAuth
 {
-    Task<IResult> Authenticate(DatabaseContext db, LoginBody inquilino, WebApplicationBuilder builder, HttpContext httpContext);
+    Task<IResult> Authenticate(DatabaseContext db, LoginBody inquilino, WebApplicationBuilder builder,
+        HttpContext httpContext);
+
+    Task<IResult> AuthenticateViaAPIKey(DatabaseContext db, string apiKey, WebApplicationBuilder builder,
+        HttpContext httpContext);
     string GenApiKey();
 }

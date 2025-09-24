@@ -2,6 +2,8 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using JWT.Algorithms;
+using JWT.Builder;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
@@ -16,6 +18,7 @@ public class Auth : IAuth
     public async Task<IResult> Authenticate(DatabaseContext db, LoginBody inquilino,
         WebApplicationBuilder builder, HttpContext httpContext)
     {
+        
         var user = db.User.FirstOrDefault(s => s.Email == inquilino.email);
         if (user == null || !Hashing.HashingUtils.VerifyHash(inquilino.password, user.PasswordHash))
         {
@@ -24,7 +27,7 @@ public class Auth : IAuth
 
         var config = builder.Configuration;
         var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]);
-        
+        /*
         var claims = new[]
         {
             new Claim("Id", Guid.NewGuid().ToString()),
@@ -37,15 +40,58 @@ public class Auth : IAuth
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddDays(1),
-            Issuer = config["Jwt:Issuer"],
-            Audience = config["Jwt:Audience"],
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
 
-        httpContext.Response.Cookies.Append("jwt", token, new CookieOptions
+        httpContext.Response.Cookies.Append("jwt-user", token, new CookieOptions
+        {
+            Expires = DateTime.UtcNow.AddDays(1),
+            HttpOnly = true,
+            Secure = true
+        });
+        */
+        var token = JwtBuilder.Create().WithAlgorithm(new RS256Algorithm(RSA.Create(),RSA.Create()))
+            .AddClaim("exp", DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds())
+            .AddClaim("sub", user.Id)
+            .Encode();
+        
+        httpContext.Response.Cookies.Append("jwt-user", token, new CookieOptions
+        {
+            Expires = DateTime.UtcNow.AddDays(1),
+            HttpOnly = true,
+            Secure = true
+        });
+        return Results.Ok();
+    }
+    
+    public async Task<IResult> AuthenticateViaAPIKey(DatabaseContext db, string apiKey,
+        WebApplicationBuilder builder, HttpContext httpContext)
+    {
+        var config = builder.Configuration;
+        var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]);
+        
+        var claims = new[]
+        {
+            new Claim("Id", Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, apiKey),
+            new Claim(JwtRegisteredClaimNames.Email, apiKey),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddDays(1),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+
+        httpContext.Response.Cookies.Append("jwt-runner", token, new CookieOptions
         {
             Expires = DateTime.UtcNow.AddDays(1),
             HttpOnly = true,   
@@ -53,7 +99,6 @@ public class Auth : IAuth
         });
 
         return Results.Ok();
-
     }
 
     public string GenApiKey()

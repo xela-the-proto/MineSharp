@@ -1,7 +1,9 @@
 using System.Data.SQLite;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using MineSharpAPI.Modules.Interfaces;
-using MineSharpAPI.Routes;
+using JWT.Algorithms;
+using JWT.Extensions.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -9,10 +11,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
+using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Queries;
+using MineSharpAPI.Routes;
 using Serilog;
 
-public class program
+namespace MineSharpAPI;
+
+public class Program
 {
     public static string runnerPath;
     public static void Main(string[] args)
@@ -72,12 +78,12 @@ public class program
         app.UseAuthorization();
         //Middleware custom
         /*
-        app.Use(async (con, next) =>
-        {
-        
-            await next(con);
-        });
-        */
+    app.Use(async (con, next) =>
+    {
+
+        await next(con);
+    });
+    */
         app.UseExceptionHandler(errorApp =>
         {
             errorApp.Run(async context =>
@@ -94,7 +100,7 @@ public class program
             });
         });
 
-        //TODO: Profili ratelimiter
+        //TODO: ratelimiter
         //app.UseRateLimiter();
         app.UseResponseCompression();
         app.Run();
@@ -103,14 +109,15 @@ public class program
     public static void RegisterServices(WebApplicationBuilder builder)
     {
         var csb = new SQLiteConnectionStringBuilder();
+        csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + Path.DirectorySeparatorChar +"Local.sqlite";
+        
         if (!File.Exists("Local.sqlite"))
         {
-            csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + Path.DirectorySeparatorChar +"Local.sqlite";
             //builder.Configuration["ConnectionStrings:postgres_lin"] = csb.ConnectionString;
             SQLiteConnection.CreateFile(Environment.CurrentDirectory + Path.DirectorySeparatorChar + "Local.sqlite");
         }
         
-         /*
+        /*
          * Singletons
          */
         builder.Services.AddSingleton<IAuth, Auth>();
@@ -150,35 +157,49 @@ public class program
             });
         });
 
-       
+       /*
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
             {   
-            o.TokenValidationParameters = new TokenValidationParameters
-            {
-               
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                ValidAudience = builder.Configuration["Jwt:Audience"],
-                ClockSkew = TimeSpan.Zero
-            };
-            o.Events = new JwtBearerEvents
-            {
-                OnMessageReceived = context =>
+                o.TokenValidationParameters = new TokenValidationParameters
                 {
-                    var token = context.Request.Cookies["jwt"];
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        context.Token = token;
-                    }
-                    return Task.CompletedTask;
+               
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ClockSkew = TimeSpan.Zero
+                };
+                o.Events = new JwtBearerEvents
+                {
+                    
+            OnMessageReceived = context =>
+            {
+                
+                var token = context.Request.Cookies["jwt-user"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
                 }
-            };
-        });
+                return Task.CompletedTask;
+
+            }
+            
+                };
+            });
+            */
+       builder.Services.AddAuthentication(options =>
+       {
+           options.DefaultAuthenticateScheme = JwtAuthenticationDefaults.AuthenticationScheme;
+           options.DefaultChallengeScheme = JwtAuthenticationDefaults.AuthenticationScheme;
+       }).AddJwtBearer(options =>
+       {
+           options.Validate();
+       });
+
         builder.Services.AddAuthorization();
         builder.Services.AddResponseCompression(options =>
         {
@@ -187,16 +208,16 @@ public class program
         });
         
         /*
-       builder.Services.AddRateLimiter(opt =>
+   builder.Services.AddRateLimiter(opt =>
+   {
+       opt.AddFixedWindowLimiter(policyName: "Restrictive", options =>
        {
-           opt.AddFixedWindowLimiter(policyName: "Restrictive", options =>
-           {
-               options.PermitLimit = 4;
-               options.Window = TimeSpan.FromSeconds(10);
-               options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-               options.QueueLimit = 2;
-           });
+           options.PermitLimit = 4;
+           options.Window = TimeSpan.FromSeconds(10);
+           options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+           options.QueueLimit = 2;
        });
-       */
+   });
+   */
     }
 }
