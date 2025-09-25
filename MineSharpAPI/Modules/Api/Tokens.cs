@@ -79,7 +79,7 @@ public class Tokens
             {
                 Log.Debug(key.Key + " " + key.OwnerID);
             }*/
-            return Results.Ok(auth.AuthenticateViaAPIKey(db,result.Key,builder,http).Result);
+            return Results.Ok();
         }
         catch (DataException e)
         {
