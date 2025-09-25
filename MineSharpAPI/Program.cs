@@ -103,9 +103,10 @@ public class program
     public static void RegisterServices(WebApplicationBuilder builder)
     {
         var csb = new SQLiteConnectionStringBuilder();
+        csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + Path.DirectorySeparatorChar +"Local.sqlite";
+
         if (!File.Exists("Local.sqlite"))
         {
-            csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + Path.DirectorySeparatorChar +"Local.sqlite";
             //builder.Configuration["ConnectionStrings:postgres_lin"] = csb.ConnectionString;
             SQLiteConnection.CreateFile(Environment.CurrentDirectory + Path.DirectorySeparatorChar + "Local.sqlite");
         }
