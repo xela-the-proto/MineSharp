@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
+using Common.Enums;
 using Common.Process;
 using Microsoft.AspNetCore.Http.HttpResults;
 using MineSharpAPI.Modules.Bodies;
@@ -26,6 +27,10 @@ public class Post
             
             using (var client = new RestClient(body.remoteUrl))
             {
+                if (string.IsNullOrEmpty(body.platform))
+                {
+                    body.platform = ServerPlatform.VANILLA.ToString();
+                }
                 await client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
             }
             /*

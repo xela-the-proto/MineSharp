@@ -7,34 +7,51 @@ namespace Runner.RunnerManager;
 
 public class ServerRunner
 {
-    public void startServerProcess(List<string> args,string workdir)
+    private static CancellationTokenSource _cts;
+    public void StartServerProcess(List<string> args,string workdir)
     {
         try
         {
             Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
-                true,true,true,false);
-            
+                true, true, true, false);
+
             Log.Verbose("Creating canc token");
             CancellationTokenSource cts = new CancellationTokenSource();
             CancellationToken ct = cts.Token;
-            var ws_thread = new Task(() => 
-                WebSocketServer.startWs(process,ct, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
-            
+            _cts = cts;
+            var ws_thread = new Task(() =>
+                _ = WebSocketServer.StartWs(process, cts, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
+
             Log.Information("Start server");
             process.Start();
             Log.Information("Start ws");
             ws_thread.Start();
-            
+
             //TODO: Memory leak?
-            while (!process.HasExited);
+            while (!process.HasExited)
+            {
+            } ;
 
             Log.Information("Cancelling");
-            cts.Cancel();
+        }
+        catch (ArgumentNullException e)
+        {
+            Log.Debug("ArgumentNullExcpetion");
+            if (e.Message.Contains("Value cannot be null. (Parameter 'data')"))
+            {
+                Log.Warning("Received null as data to send down socket, is the server shutting down?");
+                _cts.Cancel();
+            }
+            else
+            {
+                throw;
+            }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Log.Fatal(e.Message);
+            _cts.Cancel();
             throw;
         }
     }

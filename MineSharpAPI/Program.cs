@@ -14,19 +14,21 @@ using Serilog;
 
 public class program
 {
-    public static string runnerPath;
+    public static string logo = "                                   \n       |----------------|          \n      /|               /|          \n     / |              / |          \n   -/  |            -/  |          \n  /-   |           /    |          \n /     |          /     |          \n|------|----------------|          \n|     /          |     /           \n|    /           |   -/            \n|  -/            |  -/             \n| /          |   | |               \n|/        ---------|---   -        \n-------------|---/ |               \n             | -   |               \n          ---------|---            \n             |     |               \n                              ";
+
+    public static string splash =
+        "$$\\      $$\\ $$$$$$\\ $$\\   $$\\ $$$$$$$$\\  $$$$$$\\  $$\\   $$\\  $$$$$$\\  $$$$$$$\\  $$$$$$$\\  \n$$$\\    $$$ |\\_$$  _|$$$\\  $$ |$$  _____|$$  __$$\\ $$ |  $$ |$$  __$$\\ $$  __$$\\ $$  __$$\\ \n$$$$\\  $$$$ |  $$ |  $$$$\\ $$ |$$ |      $$ /  \\__|$$ |  $$ |$$ /  $$ |$$ |  $$ |$$ |  $$ |\n$$\\$$\\$$ $$ |  $$ |  $$ $$\\$$ |$$$$$\\    \\$$$$$$\\  $$$$$$$$ |$$$$$$$$ |$$$$$$$  |$$$$$$$  |\n$$ \\$$$  $$ |  $$ |  $$ \\$$$$ |$$  __|    \\____$$\\ $$  __$$ |$$  __$$ |$$  __$$< $$  ____/ \n$$ |\\$  /$$ |  $$ |  $$ |\\$$$ |$$ |      $$\\   $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n$$ | \\_/ $$ |$$$$$$\\ $$ | \\$$ |$$$$$$$$\\ \\$$$$$$  |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n\\__|     \\__|\\______|\\__|  \\__|\\________| \\______/ \\__|  \\__|\\__|  \\__|\\__|  \\__|\\__|      \n                                                                                           \n                                                                                           \n                                                                                           ";
     public static void Main(string[] args)
     {
         
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddJsonFile($"appsettings.json", false, true)
             .AddJsonFile($"appsettings.Development.json",true,true);
-
-        //The path of the runner exe
-        //TODO: MAKE THIS ALWAYSBE THE SAME THING   
-        runnerPath = builder.Configuration["Paths:RunnerPath"];
+        
         
         Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+        Log.Information("\n" + logo);
+        Log.Information("\n" + splash);
         RegisterServices(builder);
 
         var app = builder.Build();

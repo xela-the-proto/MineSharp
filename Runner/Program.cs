@@ -37,8 +37,6 @@ class Program
             .MinimumLevel.Verbose()
             .CreateLogger();
         
-        var javaArgs = ConvertFlagsToJavaFlags.ConvertList(args);
-
         var builder = WebApplication.CreateBuilder();
 
         var app = builder.Build();
@@ -49,7 +47,7 @@ class Program
             DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1],args[args.IndexOf("-f") + 1]);
             var runner = new ServerRunner();
             
-            runner.startServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
+            runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
             return Results.Ok();
         });
         

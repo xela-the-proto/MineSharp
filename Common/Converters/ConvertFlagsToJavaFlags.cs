@@ -15,12 +15,17 @@ public class ConvertFlagsToJavaFlags
                     javaFlags.Add($"-jar {flags[i + 1]}/server.jar");
                     break;
                 case "-r":
-                    javaFlags.Add($"-Xmx {flags[i + 1]}M");
-                    javaFlags.Add($"-Xms {flags[i + 1]}M");
+                    javaFlags.Add($"-Xmx{flags[i + 1]}m");
+                    javaFlags.Add($"-Xms{flags[i + 1]}m");
                     break;
             }
             i++;
         }
+        //Swap the file and ram the other way around
+        var temp = javaFlags[0];
+        javaFlags[0] = javaFlags[1];
+        javaFlags[1] = javaFlags[2];
+        javaFlags[2] = temp;
         
         return javaFlags;
     }
