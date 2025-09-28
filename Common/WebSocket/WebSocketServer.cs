@@ -26,7 +26,7 @@ public class WebSocketServer
             _ct = token.Token;
             _server = server;
 
-            Log.Information("Registering stuff");
+            Log.Debug("Registering stuff");
             server.ClientConnected += OnServerClientConnected;
             server.MessageReceived += OnServerMessageReceived;
             process.OutputDataReceived += OnProcessOutputDataReceived;
@@ -41,9 +41,9 @@ public class WebSocketServer
             while (!process.HasExited)
             {
             };
-            Log.Warning("exit");
+            Log.Debug($"Process {process.Id} exited");
             _cts.Cancel();
-            Log.Warning("Cancel");
+            Log.Debug("Sending cancelling signal");
             if (token.IsCancellationRequested)
             {
                 Log.Warning("cancel + unsub");
@@ -53,10 +53,8 @@ public class WebSocketServer
                 server.MessageReceived -= OnServerMessageReceived;
                 process.OutputDataReceived -= OnProcessOutputDataReceived;
                 process.ErrorDataReceived -= OnProcessErrorDataReceived;
-
             }
             Log.Warning("return");
-            return Task.CompletedTask;
         }
         catch (Exception e)
         {
@@ -70,10 +68,9 @@ public class WebSocketServer
     {
         try
         {
-            if (string.IsNullOrEmpty(args.Data))
+            if (!string.IsNullOrEmpty(args.Data))
             {
                 _server.SendAsync(CLIENT_GUID, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
-
             }
             Console.WriteLine(args.Data);
         }
@@ -87,7 +84,7 @@ public class WebSocketServer
     {
         try
         {
-            if (string.IsNullOrEmpty(args.Data))
+            if (!string.IsNullOrEmpty(args.Data))
             {
                 _server.SendAsync(CLIENT_GUID, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
             }

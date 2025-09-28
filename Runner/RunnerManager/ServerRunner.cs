@@ -23,15 +23,13 @@ public class ServerRunner
             var ws_thread = new Task(() =>
                 _ = WebSocketServer.StartWs(process, cts, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
 
-            Log.Information("Start server");
+            Log.Debug("Start server");
             process.Start();
-            Log.Information("Start ws");
+            Log.Debug("Start ws");
             ws_thread.Start();
 
             //TODO: Memory leak?
-            while (!process.HasExited)
-            {
-            } ;
+            while (!process.HasExited) ;
 
             Log.Information("Cancelling");
         }
