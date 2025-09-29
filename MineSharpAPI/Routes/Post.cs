@@ -33,14 +33,6 @@ public class Post
                 }
                 await client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
             }
-            /*
-            var runner = new Process();
-            runner.StartInfo.FileName = program.runnerPath;
-            runner.StartInfo.Arguments = "-v " + body.version + " -f " + body.path + " -r " + body.ram ;
-            runner.StartInfo.CreateNoWindow = false;
-            runner.StartInfo.UseShellExecute = true;
-            runner.Start();
-            */
         });
         
         app.MapPost("/api/Runners/CreateServer", async ([FromBody]RunnerBody body, HttpContext context, DatabaseContext db) =>
@@ -53,7 +45,5 @@ public class Post
             var result = Tokens.CreateApiToken(http, db);
             return result.Result;
         }).RequireAuthorization();
-        
-        
     }
 }

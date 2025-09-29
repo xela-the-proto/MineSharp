@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace MineSharpAPI.Modules.Api;
 /*
@@ -35,7 +36,7 @@ public class DatabaseContext : DbContext
     
     public void OnDbSavingChanges(object? sender, SavingChangesEventArgs args)
     {
-        
+        Log.Warning("Db Syncyng");
     }
 }
 

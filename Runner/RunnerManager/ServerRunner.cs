@@ -8,18 +8,31 @@ namespace Runner.RunnerManager;
 public class ServerRunner
 {
     private static CancellationTokenSource _cts;
-    public void StartServerProcess(List<string> args,string workdir)
+    public void StartServerProcess(List<string> args,string workdir,bool eulaAccept)
     {
         try
         {
             Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
-
+            
             Log.Verbose("Creating canc token");
             CancellationTokenSource cts = new CancellationTokenSource();
             CancellationToken ct = cts.Token;
             _cts = cts;
+            if (eulaAccept)
+            {
+                process.Start();
+                while (!process.HasExited) ;
+                Log.Verbose("Exited first loop for eula, changing file content");
+                var path = Path.Combine(workdir, "eula.txt");
+                Log.Verbose("Opening file stream");
+                var filestream = File.ReadAllText(path);
+                var txt = filestream.Replace("eula=false","eula=true");
+                Log.Verbose("Write and close stream");
+                File.WriteAllText(path,txt);
+            }
+            
             var ws_thread = new Task(() =>
                 _ = WebSocketServer.StartWs(process, cts, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
 

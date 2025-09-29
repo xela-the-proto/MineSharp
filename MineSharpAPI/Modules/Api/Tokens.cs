@@ -42,7 +42,7 @@ public class Tokens
             {
                 throw new DataException("API key already exists with that name");
             }
-            return Results.Ok();
+            return Results.Ok(token);
         }
         catch (DataException e)
         {

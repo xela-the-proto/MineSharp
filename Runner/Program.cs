@@ -1,11 +1,13 @@
 ﻿
 using System.Diagnostics;
+using System.Reflection;
 using Common.Converters;
 using Common.Enums;
 using Common.Json.Structures;
 using Microsoft.AspNetCore.Mvc;
 using MineSharpAPI.Modules.Bodies;
 using Runner.DownloadManager;
+using Runner.Routes;
 using Runner.RunnerManager;
 using Serilog;
 
@@ -15,7 +17,7 @@ class Program
     
     //Path to the folder
     public static string ABSOLUTE_SERVER_PATH;
-    public static string ABSOLUTE_RUNNER_PATH;
+    public static string CONFIG_PATH;
     public static RunnerPropertiesStructure RUNNER_PROPERTIES;
     static async Task Main()
     {
@@ -29,21 +31,13 @@ class Program
             .CreateLogger();
         Log.Information("Switching to newtonsoft logger");   
 
+        ConfigChecks(Assembly.GetExecutingAssembly().Location);
         var app = builder.Build();
         
-        app.MapPost("/startServer",([FromBody]RunnerBody tuple) =>
-        {
-            var args = ArgsParser.BuildArgs(tuple);
-            ConfigChecks(tuple.path);
-
-            DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1],args[args.IndexOf("-f") + 1]);
-            var runner = new ServerRunner();
-            
-            runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
-            return Results.Ok();
-        });
+        Get.registerGets(app);
         
-        Console.WriteLine("Runner listening http://localhost:5001/");
+        
+        Log.Warning("Runner listening http://localhost:5001/");
         await app.RunAsync("http://localhost:5001");
         
     }
@@ -51,18 +45,14 @@ class Program
 
     public static void ConfigChecks(string root)
     {
-        ABSOLUTE_SERVER_PATH = root;
-
-        if (!Directory.Exists(ABSOLUTE_SERVER_PATH))
-        {
-            Log.Verbose("Directory doesnt exist creating");
-            Directory.CreateDirectory(ABSOLUTE_SERVER_PATH);
-            if (!File.Exists(ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "config.json"))
+        CONFIG_PATH = Path.Combine(root,"config.json");
+        
+            Directory.CreateDirectory(CONFIG_PATH);
+            if (!File.Exists(CONFIG_PATH))
             {
                 Log.Verbose("Config doesnt exist creating");
-                RUNNER_PROPERTIES = ConfigManager.WriteConfig(ABSOLUTE_SERVER_PATH);
+                RUNNER_PROPERTIES = ConfigManager.WriteConfig(CONFIG_PATH);
             }
-        }
     }
     
 }

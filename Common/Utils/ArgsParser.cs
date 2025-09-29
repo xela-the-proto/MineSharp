@@ -8,7 +8,8 @@ public class ArgsParser
         { nameof(RunnerBody.ram), "-r" },
         { nameof(RunnerBody.version), "-v" },
         { nameof(RunnerBody.platform), "-p" },
-        { nameof(RunnerBody.path), "-f" }
+        { nameof(RunnerBody.path), "-f" },
+        {nameof(RunnerBody.eulaAccept), "-eula"}
     };
     public static List<string> BuildArgs(RunnerBody body)
     {
