@@ -3,12 +3,14 @@ using System.Text;
 using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Routes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
+using MineSharpAPI.Modules.Middleware;
 using MineSharpAPI.Queries;
 using Serilog;
 
@@ -71,15 +73,16 @@ public class program
 
         app.UseCors("Frontend");
         app.UseAuthentication();
+        app.UseApiKeyCheck();
         app.UseAuthorization();
-        //Middleware custom
-        /*
         app.Use(async (con, next) =>
         {
-        
+            var context = con;
+
+
             await next(con);
         });
-        */
+        
         app.UseExceptionHandler(errorApp =>
         {
             errorApp.Run(async context =>
@@ -182,7 +185,9 @@ public class program
                 }
             };
         });
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization(options =>
+        {
+        });
         builder.Services.AddResponseCompression(options =>
         {
             options.EnableForHttps = true;

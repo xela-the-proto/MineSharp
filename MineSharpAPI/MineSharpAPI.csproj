@@ -55,7 +55,6 @@
     <ItemGroup>
       <Folder Include="Modules\Bodies\" />
       <Folder Include="Modules\Json\" />
-      <Folder Include="Modules\Middleware\" />
     </ItemGroup>
 
     <ItemGroup>
