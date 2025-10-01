@@ -1,9 +1,6 @@
-using System.Data.Entity;
-using System.Reflection;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
+using Serilog;
 
 namespace MineSharpAPI.Modules.Middleware;
 
@@ -18,25 +15,39 @@ public class ApiKeyCheckMiddleware
 
     public async Task<IResult> InvokeAsync(HttpContext context)
     {
-        if (context.Request.Headers.ContainsKey("x-api-key") && context.Request.Path.Value.Contains("/api"))
+        try
         {
-            var key =  context.Request.Headers["x-api-key"];
-            var service = context.RequestServices.GetRequiredService<DatabaseContext>();
-            var keyExist = service.ApiKeys.FirstOrDefault(x => x.Key == key[0]);
+            if (context.Request.Headers.ContainsKey("x-api-key") && context.Request.Path.Value.Contains("/api"))
+            {
+                var key =  context.Request.Headers["x-api-key"];
+                var service = context.RequestServices.GetRequiredService<DatabaseContext>();
+                var keyExist = service.ApiKeys.FirstOrDefaultAsync(x => x.Key == key[0]);
                 
-            if (!string.IsNullOrEmpty(key) && keyExist != null)
-            { 
-                context.User.
-                await _next(context);      
-            }else
+                if (!string.IsNullOrEmpty(key) && keyExist.Result != null)
+                { 
+                    await _next(context);      
+                }else
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Results.Unauthorized();
+                } 
+            }
+            else if (!context.Request.Headers.ContainsKey("x-api-key") && context.Request.Path.Value.Contains("/api"))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Results.Unauthorized();
-            } 
+            }else
+            {
+                _next(context);
+            }
         }
-        else
+        catch (Exception e)
         {
-            _next(context);
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            var bodystream = new StreamWriter(context.Response.Body);
+            bodystream.Write("Pipeline failure!");
+            Log.Fatal(e.Message);
+            return Results.InternalServerError();
         }
 
         return null;

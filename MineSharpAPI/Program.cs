@@ -73,8 +73,8 @@ public class program
 
         app.UseCors("Frontend");
         app.UseAuthentication();
-        app.UseApiKeyCheck();
         app.UseAuthorization();
+        app.UseApiKeyCheck();
         app.Use(async (con, next) =>
         {
             var context = con;

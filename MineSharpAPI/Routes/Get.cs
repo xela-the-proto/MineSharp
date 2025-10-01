@@ -16,11 +16,11 @@ public class Get
             return result;
         }).RequireAuthorization();
         */
-        app.MapGet("/debug", async (HttpContext http, DatabaseContext database) =>
+        app.MapGet("/api/debug", async (HttpContext http, DatabaseContext database) =>
         {
-            var user = http.User.Claims.ToList();
-            return http.User.Claims.ToList()[1].Value;
-        }).RequireAuthorization();
+            http.Response.StatusCode = 418;
+            return;
+        });
         
         
         app.MapGet("/auth/", async ([FromBody] LoginBody user, HttpContext http, DatabaseContext db, IAuth auth, [FromServices]IDbUser userTable) =>
@@ -28,12 +28,6 @@ public class Get
             var result = auth.Authenticate(db, user, builder, http).Result;
             return result;
         });
-
-        app.MapGet("/api/runners/GetAPITokenAuth", async (HttpContext http, DatabaseContext db) =>
-        {
-            var result = Tokens.ValidateApiToken(http, db,builder);
-            return result.Result;
-        }).RequireAuthorization();
         
     }
 }

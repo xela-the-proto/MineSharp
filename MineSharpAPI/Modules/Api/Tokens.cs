@@ -46,6 +46,7 @@ public class Tokens
         }
         catch (DataException e)
         {
+            http.Response.StatusCode = StatusCodes.Status500InternalServerError;
             return Results.InternalServerError($"Api key already exists with that name for user id {user}");
         }
     }
