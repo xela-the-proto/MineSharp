@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Common.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Serilog;
 
 namespace MineSharpAPI.Modules.Api;
@@ -24,15 +26,12 @@ public class DatabaseContext : DbContext
         });
         builder.Entity<User>().HasData();
     }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlite();
-    }
+    
     
     public DbSet<User> User { get; set; }
     public DbSet<Runners> Runner { get; set; }
     public DbSet<APIKeys> ApiKeys { get; set; }
+    public DbSet<Server> Server { get; set; }
     
     public void OnDbSavingChanges(object? sender, SavingChangesEventArgs args)
     {
@@ -67,12 +66,6 @@ public record Runners
     [StringLength(15)]
     [Required]
     public string PublicIp { get; set; }
-    [Required]
-    public string Token { get; set; }
-    [Required]
-    [ForeignKey("User")]
-    public string OwnerID { get; set; }
-
 }
 
 public record APIKeys
@@ -86,4 +79,25 @@ public record APIKeys
     [Required]
     [ForeignKey("User")]
     public string OwnerID { get; set; }
+}
+
+public record Server()
+{    
+    [StringLength(50)]  
+    [Required]
+    [Key]
+    public string id { get; set; }
+    
+    [Required]
+    public string name { get; set; }
+    
+    [Required]
+    [ForeignKey("Runners")]
+    public ServerStatus status { get; set; }
+    
+    [Required]
+    public float usage { get; set; }
+    
+    [Required]
+    public int wsPort { get; set; }
 }

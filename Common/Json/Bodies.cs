@@ -31,3 +31,33 @@ public record RunnerBody
     public string remoteUrl { get; set; }
     public bool eulaAccept { get; set; }
 }
+
+
+public record Server()
+{
+    public string id { get; set; }
+    
+    public string name { get; set; }
+    
+    public ServerStatus status { get; set; }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

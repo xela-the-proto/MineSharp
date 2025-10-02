@@ -25,7 +25,7 @@ public class ApiKeyCheckMiddleware
                 
                 if (!string.IsNullOrEmpty(key) && keyExist.Result != null)
                 { 
-                    await _next(context);      
+                    await _next(context);  
                 }else
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;

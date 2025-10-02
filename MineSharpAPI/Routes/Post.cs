@@ -45,5 +45,10 @@ public class Post
             var result = Tokens.CreateApiToken(http, db);
             return result.Result;
         }).RequireAuthorization();
+
+        app.MapPost("/api/Runners/UpdateServerStatus", async (HttpContext context, DatabaseContext db) =>
+        {
+
+        });
     }
 }

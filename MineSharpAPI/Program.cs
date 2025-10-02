@@ -12,6 +12,7 @@ using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Middleware;
 using MineSharpAPI.Queries;
+using Npgsql;
 using Serilog;
 
 public class program
@@ -39,11 +40,10 @@ public class program
         using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            if (context.Database.EnsureCreated())
-            {
-                Log.Warning("Database migrated and created");
-            }
-
+            
+            context.Database.Migrate(); 
+            Log.Warning("Database migrated and created");
+            
             if (!context.User.Any())
             { 
                 var db = serviceScope.ServiceProvider.GetRequiredService<IDbUser>();
@@ -51,6 +51,18 @@ public class program
                 {
                     email = "welcome@to.mineasharp",
                     password = "admin"
+                });
+            }
+
+            if (!context.ApiKeys.Any())
+            {
+                var auth = serviceScope.ServiceProvider.GetRequiredService<IAuth>();
+
+                context.ApiKeys.Add(new APIKeys()
+                {
+                    Key = auth.GenApiKey(),
+                    keyName = "MASTER_KEY",
+                    OwnerID = "0"
                 });
             }
 
@@ -63,6 +75,9 @@ public class program
             {
                 Log.Warning("Syncyng db to EF queries");
             };
+            
+            context.SaveChanges();
+            
         }
       
         app.UseHttpsRedirection();
@@ -75,14 +90,7 @@ public class program
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseApiKeyCheck();
-        app.Use(async (con, next) =>
-        {
-            var context = con;
-
-
-            await next(con);
-        });
-        
+       
         app.UseExceptionHandler(errorApp =>
         {
             errorApp.Run(async context =>
@@ -136,9 +144,15 @@ public class program
         /*
          * EF
          */
-        builder.Services.AddDbContext<DatabaseContext>(opt =>
+        builder.Services.AddDbContextPool<DatabaseContext>(opt =>
         {
-            opt.UseSqlite(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
+            var conn = new NpgsqlConnectionStringBuilder();
+            conn.Host = "localhost";
+            conn.Username = "postgres";
+            conn.Password = "";
+            
+            opt.UseNpgsql(conn.ConnectionString);
+            //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
 
         });
 

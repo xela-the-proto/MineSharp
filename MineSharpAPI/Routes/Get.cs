@@ -16,10 +16,10 @@ public class Get
             return result;
         }).RequireAuthorization();
         */
-        app.MapGet("/api/debug", async (HttpContext http, DatabaseContext database) =>
+        app.MapGet("/debug", async (HttpContext http, DatabaseContext database) =>
         {
-            http.Response.StatusCode = 418;
-            return;
+            var result = Tokens.CreateApiToken(http, database);
+            return result.Result;
         });
         
         
