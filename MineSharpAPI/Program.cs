@@ -146,11 +146,13 @@ public class program
          */
         builder.Services.AddDbContextPool<DatabaseContext>(opt =>
         {
-            var conn = new NpgsqlConnectionStringBuilder();
-            conn.Host = "localhost";
-            conn.Username = "postgres";
-            conn.Password = "";
-            
+            var conn = new NpgsqlConnectionStringBuilder
+            {
+                Host = builder.Configuration["ConnectionStrings:postgres_ip"],
+                Username = "postgres",
+                Password = builder.Configuration["ConnectionStrings:postgres"]
+            };
+
             opt.UseNpgsql(conn.ConnectionString);
             //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
 
