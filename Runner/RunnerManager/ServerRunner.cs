@@ -1,6 +1,7 @@
 ﻿using System.Buffers.Text;
 using Common.Process;
 using Common.WebSocket;
+using Runner.Api;
 using Serilog;
 
 namespace Runner.RunnerManager;
@@ -33,13 +34,17 @@ public class ServerRunner
                 File.WriteAllText(path,txt);
             }
             
-            var ws_thread = new Task(() =>
-                _ = WebSocketServer.StartWs(process, cts, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
+            var wsThread = new Task(() =>
+                WebSocketServer.StartWs(process, cts, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
+            var updateThread = new Task(() => CentralBroker.UpdateServerStatus(process,cts));
 
             Log.Debug("Start server");
             process.Start();
             Log.Debug("Start ws");
-            ws_thread.Start();
+            wsThread.Start();
+            Log.Debug("Start monitoring");
+            updateThread.Start();
+
 
             //TODO: Memory leak?
             while (!process.HasExited) ;

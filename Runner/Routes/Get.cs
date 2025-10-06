@@ -1,6 +1,8 @@
 using Common.Converters;
+using Common.Process;
 using Microsoft.AspNetCore.Mvc;
 using MineSharpAPI.Modules.Bodies;
+using Runner.Api;
 using Runner.DownloadManager;
 using Runner.RunnerManager;
 
@@ -10,7 +12,7 @@ public class Get
 {
     public static void registerGets(WebApplication app)
     {
-        app.MapPost("/startServer",([FromBody]RunnerBody tuple) =>
+        app.MapPost("/startServer",async ([FromBody]RunnerBody tuple) =>
         {
             var args = ArgsParser.BuildArgs(tuple);
             Program.ConfigChecks(tuple.path);
@@ -20,6 +22,11 @@ public class Get
             
             runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1],tuple.eulaAccept);
             return Results.Ok();
+        });
+
+        app.MapGet("/debug", async ([FromBody]RunnerBody tuple) =>
+        {
+            
         });
     }
 }

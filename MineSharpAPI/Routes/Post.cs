@@ -46,9 +46,6 @@ public class Post
             return result.Result;
         }).RequireAuthorization();
 
-        app.MapPost("/api/Runners/UpdateServerStatus", async (HttpContext context, DatabaseContext db) =>
-        {
 
-        });
     }
 }

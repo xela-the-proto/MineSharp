@@ -2,6 +2,7 @@
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Hashing;
+using Server = MineSharpAPI.Modules.Api.Server;
 
 namespace MineSharpAPI.Routes;
 
@@ -27,6 +28,10 @@ public class Put
         app.MapPut("/api/runners/register", async([FromBody]Runners runnerDetails, HttpContext context, DatabaseContext db) =>
         {
             
+        });
+        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context, DatabaseContext db) =>
+        {
+            await db.Server.AddAsync(serverStats);
         });
     }
 }

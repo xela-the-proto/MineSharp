@@ -10,17 +10,19 @@ namespace Common.WebSocket;
 
 public class WebSocketServer
 {
-    private static WatsonWsServer _server;
+    public static WatsonWsServer _server;
+    public static int _port;
     private static CancellationTokenSource _cts;
     private static CancellationToken _ct;
     private static Guid CLIENT_GUID;
     private static System.Diagnostics.Process SERVER_PROCESS;
     public static Task StartWs(System.Diagnostics.Process process, CancellationTokenSource token, string guid)
     {
+        _port = Random.Shared.Next(49152, 65535);
         try
         {
             Log.Information("Starting Watson ws");
-            WatsonWsServer server = new WatsonWsServer();
+            WatsonWsServer server = new WatsonWsServer(port:_port);
 
             _cts = token;
             _ct = token.Token;
@@ -37,7 +39,6 @@ public class WebSocketServer
             SERVER_PROCESS = process;
             Log.Information("Websocket start");
             _server.StartAsync(_ct);
-
             while (!process.HasExited)
             {
             };

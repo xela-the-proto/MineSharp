@@ -22,24 +22,24 @@ public class DownloadDispatch
       RestRequest buildDownRequest = new RestRequest(jarBuildManifestAddres);
       
       Log.Information("Downloading main manifest");
-      Log.Information(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "temp.json");
+      Log.Information(Path.Combine(path, "temp.json"));
       
-      if (!Directory.Exists(Program.ABSOLUTE_SERVER_PATH))
+      if (!Directory.Exists(path))
       {
-          Directory.CreateDirectory(Program.ABSOLUTE_SERVER_PATH);
+          Directory.CreateDirectory(path);
       }else if (File.Exists(path))
       {
           Log.Information("server already exists");
           return;
       }
       var buildManifestFileInBytes = client.DownloadData(buildDownRequest);
-      File.WriteAllBytesAsync(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "temp.json",buildManifestFileInBytes ?? 
-          throw new NullReferenceException("Got empty array for build manifest!"));
+      File.WriteAllBytesAsync(Path.Combine(path,"temp.json"),buildManifestFileInBytes ?? 
+                                                            throw new NullReferenceException("Got empty array for build manifest!"));
       
-      JarDownloadStructure structure = Deserializer.DeserializeObject<JarDownloadStructure>(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "temp.json");
+      JarDownloadStructure structure = Deserializer.DeserializeObject<JarDownloadStructure>(Path.Combine(path, "temp.json"));
 
       var serverJar = client.DownloadDataAsync(new RestRequest(structure.builds.First().jarUrl)).Result;
-      File.WriteAllBytesAsync(Program.ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "server.jar", serverJar ?? 
+      File.WriteAllBytesAsync(Path.Combine(path, "server.jar"), serverJar ?? 
           throw new NullReferenceException("Got empty array for java file!"));
     }
     

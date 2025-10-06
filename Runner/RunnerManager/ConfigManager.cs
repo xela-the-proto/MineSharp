@@ -14,7 +14,7 @@ public class ConfigManager
             ShardGuid = Guid.NewGuid(),
             token = ""
         };
-        File.WriteAllText(file_root, JsonConvert.SerializeObject(properties));
+        File.WriteAllText(Path.Combine(file_root, "config.json"), JsonConvert.SerializeObject(properties));
         
         return properties;
     }

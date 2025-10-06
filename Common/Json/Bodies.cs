@@ -36,10 +36,16 @@ public record RunnerBody
 public record Server()
 {
     public string id { get; set; }
+
+    public string parentRunner { get; set; }
     
     public string name { get; set; }
-    
+
     public ServerStatus status { get; set; }
+    
+    public float usage { get; set; }
+
+    public int wsPort { get; set; }
 }
 
 

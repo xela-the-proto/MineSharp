@@ -89,10 +89,13 @@ public record Server()
     public string id { get; set; }
     
     [Required]
+    [ForeignKey("Runners")]
+    public string parentRunner { get; set; }
+    
+    [Required]
     public string name { get; set; }
     
     [Required]
-    [ForeignKey("Runners")]
     public ServerStatus status { get; set; }
     
     [Required]

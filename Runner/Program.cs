@@ -4,6 +4,7 @@ using System.Reflection;
 using Common.Converters;
 using Common.Enums;
 using Common.Json.Structures;
+using Hardware.Info;
 using Microsoft.AspNetCore.Mvc;
 using MineSharpAPI.Modules.Bodies;
 using Runner.DownloadManager;
@@ -29,9 +30,10 @@ class Program
             .WriteTo.File(ABSOLUTE_SERVER_PATH + Path.DirectorySeparatorChar + "log.txt")
             .MinimumLevel.Verbose()
             .CreateLogger();
-        Log.Information("Switching to newtonsoft logger");   
+        Log.Information("Switching to Serilog...");
 
-        ConfigChecks(Assembly.GetExecutingAssembly().Location);
+        ConfigChecks(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+            "MinesharpRunner"));
         var app = builder.Build();
         
         Get.registerGets(app);
@@ -45,14 +47,15 @@ class Program
 
     public static void ConfigChecks(string root)
     {
-        CONFIG_PATH = Path.Combine(root,"config.json");
+        CONFIG_PATH = Path.Combine(root);
+        Directory.CreateDirectory(CONFIG_PATH);
         
-            Directory.CreateDirectory(CONFIG_PATH);
-            if (!File.Exists(CONFIG_PATH))
-            {
-                Log.Verbose("Config doesnt exist creating");
-                RUNNER_PROPERTIES = ConfigManager.WriteConfig(CONFIG_PATH);
-            }
+        if (!File.Exists(Path.Combine(CONFIG_PATH, "config.json"))) 
+        { 
+            Log.Verbose("Config doesnt exist creating"); 
+            RUNNER_PROPERTIES = ConfigManager.WriteConfig(CONFIG_PATH);
+        }
+        RUNNER_PROPERTIES = ConfigManager.ReadConfig(CONFIG_PATH);
     }
     
 }
