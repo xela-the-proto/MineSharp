@@ -2,6 +2,7 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using Common.Enums;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Design;
     using Microsoft.EntityFrameworkCore.Migrations;
     using Serilog;
 
@@ -13,7 +14,7 @@
      */
     public class DatabaseContext : DbContext
     {
-        public DatabaseContext(DbContextOptions options)
+        public DatabaseContext(DbContextOptions<DatabaseContext> options)
             : base(options)
         {
         }
@@ -39,7 +40,16 @@
         }
     }
 
-
+    /*
+    public class DbContextFactory : IDesignTimeDbContextFactory<DbContext>
+    {
+        public DbContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
+            return new DbContext(optionsBuilder.Options);
+        }
+    }
+    */
 
     public record User
     {
@@ -103,4 +113,7 @@
         
         [Required]
         public int wsPort { get; set; }
+        
+        [Required]
+        public bool IsEulaAccepted { get; set; }
     }

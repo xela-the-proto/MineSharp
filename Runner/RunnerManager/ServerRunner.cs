@@ -53,7 +53,6 @@ public class ServerRunner
         }
         catch (ArgumentNullException e)
         {
-            Log.Debug("ArgumentNullExcpetion");
             if (e.Message.Contains("Value cannot be null. (Parameter 'data')"))
             {
                 Log.Warning("Received null as data to send down socket, is the server shutting down?");

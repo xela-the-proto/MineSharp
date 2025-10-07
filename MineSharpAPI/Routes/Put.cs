@@ -45,6 +45,7 @@ public class Put
                 server.status = serverStats.status;
                 server.usage = serverStats.usage;
                 server.wsPort = serverStats.wsPort;
+                server.IsEulaAccepted = serverStats.IsEulaAccepted;
 
                 await db.Server.AddAsync(server);
 

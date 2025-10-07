@@ -46,6 +46,8 @@ public record Server()
     public float usage { get; set; }
 
     public int wsPort { get; set; }
+    
+    public bool IsEulaAccepted { get; set; }
 }
 
 
