@@ -115,15 +115,6 @@ public class program
 
     public static void RegisterServices(WebApplicationBuilder builder)
     {
-        var csb = new SQLiteConnectionStringBuilder();
-        csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + Path.DirectorySeparatorChar +"Local.sqlite";
-
-        if (!File.Exists("Local.sqlite"))
-        {
-            //builder.Configuration["ConnectionStrings:postgres_lin"] = csb.ConnectionString;
-            SQLiteConnection.CreateFile(Environment.CurrentDirectory + Path.DirectorySeparatorChar + "Local.sqlite");
-        }
-        
          /*
          * Singletons
          */
@@ -144,13 +135,27 @@ public class program
         /*
          * EF
          */
-        builder.Services.AddDbContextPool<DatabaseContext>(opt =>
+        builder.Services.AddDbContext<DatabaseContext>(opt =>
         {
             var conn = new NpgsqlConnectionStringBuilder
             {
-                Host = builder.Configuration["ConnectionStrings:postgres_ip"],
+                Host = "localhost:5432",
                 Username = "postgres",
-                Password = builder.Configuration["ConnectionStrings:postgres"]
+                Password = ""
+            };
+
+            opt.UseNpgsql(conn.ConnectionString);
+            //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
+
+        });
+        
+        builder.Services.AddPooledDbContextFactory<DatabaseContext>(opt =>
+        {
+            var conn = new NpgsqlConnectionStringBuilder
+            {
+                Host = "localhost:5432",
+                Username = "postgres",
+                Password = ""
             };
 
             opt.UseNpgsql(conn.ConnectionString);

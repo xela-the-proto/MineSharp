@@ -15,7 +15,6 @@ public class Get
         app.MapPost("/startServer",async ([FromBody]RunnerBody tuple) =>
         {
             var args = ArgsParser.BuildArgs(tuple);
-            Program.ConfigChecks(tuple.path);
 
             DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1],args[args.IndexOf("-f") + 1]);
             var runner = new ServerRunner();

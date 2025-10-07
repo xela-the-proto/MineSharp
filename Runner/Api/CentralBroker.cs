@@ -20,7 +20,7 @@ public class CentralBroker
             {
                 info.RefreshAll();
                 var serverStats = new Server();
-                serverStats.id = Guid.NewGuid().ToString();
+                serverStats.id = File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory, "guid.txt"));
                 serverStats.name = process.StartInfo.WorkingDirectory.Substring(
                     process.StartInfo.WorkingDirectory.IndexOf(Path.DirectorySeparatorChar)
                 );
@@ -28,12 +28,12 @@ public class CentralBroker
                 serverStats.status = ServerStatus.STOPPED;
                 serverStats.usage = info.CpuList[0].CurrentClockSpeed;
                 serverStats.wsPort = WebSocketServer._port;
-                Thread.Sleep(5000);
+                Thread.Sleep(3000);
 
-                client.Put(new RestRequest("/api/runners/updateServerStatus").AddBody(
-                    JsonConvert.SerializeObject(serverStats)));
+                client.PutAsync(new RestRequest("/api/runners/updateServerStatus").AddBody(
+                    JsonConvert.SerializeObject(serverStats))
+                    .AddHeader("x-api-key",Program.RUNNER_PROPERTIES.token));
             }
-            
         }
         return Task.CompletedTask;
     }

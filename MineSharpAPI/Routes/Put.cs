@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Hashing;
-using Server = MineSharpAPI.Modules.Api.Server;
+using Server = MineSharpAPI.Modules.Bodies.Server;
 
 namespace MineSharpAPI.Routes;
 
@@ -29,9 +30,33 @@ public class Put
         {
             
         });
-        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context, DatabaseContext db) =>
+        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context, IDbContextFactory<DatabaseContext> DbFactory) =>
         {
-            await db.Server.AddAsync(serverStats);
+            await using var db = await DbFactory.CreateDbContextAsync();
+
+            var server = new Modules.Api.Server();
+            
+            var entity = await db.Server.FirstOrDefaultAsync(x => x.id == serverStats.id);
+            if (entity == null)
+            {
+                server.id = serverStats.id;
+                server.name = serverStats.name;
+                server.parentRunner = serverStats.parentRunner;
+                server.status = serverStats.status;
+                server.usage = serverStats.usage;
+                server.wsPort = serverStats.wsPort;
+
+                await db.Server.AddAsync(server);
+
+            }
+            else
+            {
+                entity.status = serverStats.status;
+                entity.usage = serverStats.usage;
+                entity.wsPort = serverStats.wsPort;
+                db.Server.Update(entity);
+            }
+            await db.SaveChangesAsync();
         });
     }
 }
