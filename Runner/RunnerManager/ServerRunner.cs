@@ -1,5 +1,4 @@
-﻿using System.Buffers.Text;
-using Common.Process;
+﻿using Common.Process;
 using Common.WebSocket;
 using Runner.Api;
 using Serilog;
@@ -9,17 +8,18 @@ namespace Runner.RunnerManager;
 public class ServerRunner
 {
     private static CancellationTokenSource _cts;
-    public void StartServerProcess(List<string> args,string workdir,bool eulaAccept)
+
+    public void StartServerProcess(List<string> args, string workdir, bool eulaAccept)
     {
         try
         {
             Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
-            
+
             Log.Verbose("Creating canc token");
-            CancellationTokenSource cts = new CancellationTokenSource();
-            CancellationToken ct = cts.Token;
+            var cts = new CancellationTokenSource();
+            var ct = cts.Token;
             _cts = cts;
             if (eulaAccept)
             {
@@ -29,14 +29,14 @@ public class ServerRunner
                 var path = Path.Combine(workdir, "eula.txt");
                 Log.Verbose("Opening file stream");
                 var filestream = File.ReadAllText(path);
-                var txt = filestream.Replace("eula=false","eula=true");
+                var txt = filestream.Replace("eula=false", "eula=true");
                 Log.Verbose("Write and close stream");
-                File.WriteAllText(path,txt);
+                File.WriteAllText(path, txt);
             }
-            
+
             var wsThread = new Task(() =>
-                WebSocketServer.StartWs(process, cts, Program.RUNNER_PROPERTIES.ShardGuid.ToString()));
-            var updateThread = new Task(() => CentralBroker.UpdateServerStatus(process,cts));
+                WebSocketServer.StartWs(process, cts));
+            var updateThread = new Task(() => CentralBroker.UpdateServerStatus(process, cts));
 
             Log.Debug("Start server");
             process.Start();

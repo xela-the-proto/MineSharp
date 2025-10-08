@@ -1,20 +1,8 @@
-﻿using System.Diagnostics;
-using System.Net;
-using System.Net.WebSockets;
-using System.Text;
-using Common.Enums;
-using Common.Process;
-using Microsoft.AspNetCore.Http.HttpResults;
-using MineSharpAPI.Modules.Bodies;
+﻿using Common.Enums;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
-using MineSharpAPI.Modules.Interfaces;
-using PusherServer;
+using MineSharpAPI.Modules.Bodies;
 using RestSharp;
-using Runner;
-using Serilog;
 
 namespace MineSharpAPI.Routes;
 
@@ -22,30 +10,23 @@ public class Post
 {
     public static void RegisterPosts(WebApplication app)
     {
-        app.MapPost("/api/Runners/RunServer", async ([FromBody]RunnerBody body, HttpContext context, DatabaseContext db) =>
-        {
-            
-            using (var client = new RestClient(body.remoteUrl))
+        app.MapPost("/api/Runners/RunServer",
+            async ([FromBody] RunnerBody body, HttpContext context, DatabaseContext db) =>
             {
-                if (string.IsNullOrEmpty(body.platform))
+                using (var client = new RestClient(body.remoteUrl))
                 {
-                    body.platform = ServerPlatform.VANILLA.ToString();
+                    if (string.IsNullOrEmpty(body.platform)) body.platform = ServerPlatform.VANILLA.ToString();
+                    client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
                 }
-                await client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
-            }
-        });
-        
-        app.MapPost("/api/Runners/CreateServer", async ([FromBody]RunnerBody body, HttpContext context, DatabaseContext db) =>
-        {
-            
-        });
-        
+            });
+
+        app.MapPost("/api/Runners/CreateServer",
+            async ([FromBody] RunnerBody body, HttpContext context, DatabaseContext db) => { });
+
         app.MapPost("/api/runners/GenAPIToken", async (HttpContext http, DatabaseContext db) =>
         {
             var result = Tokens.CreateApiToken(http, db);
             return result.Result;
         }).RequireAuthorization();
-
-
     }
 }

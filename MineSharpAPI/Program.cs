@@ -1,34 +1,33 @@
-using System.Data.SQLite;
 using System.Text;
-using MineSharpAPI.Modules.Interfaces;
-using MineSharpAPI.Routes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
+using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Modules.Middleware;
 using MineSharpAPI.Queries;
+using MineSharpAPI.Routes;
 using Npgsql;
 using Serilog;
 
 public class program
 {
-    public static string logo = "                                   \n       |----------------|          \n      /|               /|          \n     / |              / |          \n   -/  |            -/  |          \n  /-   |           /    |          \n /     |          /     |          \n|------|----------------|          \n|     /          |     /           \n|    /           |   -/            \n|  -/            |  -/             \n| /          |   | |               \n|/        ---------|---   -        \n-------------|---/ |               \n             | -   |               \n          ---------|---            \n             |     |               \n                              ";
+    public static string logo =
+        "                                   \n       |----------------|          \n      /|               /|          \n     / |              / |          \n   -/  |            -/  |          \n  /-   |           /    |          \n /     |          /     |          \n|------|----------------|          \n|     /          |     /           \n|    /           |   -/            \n|  -/            |  -/             \n| /          |   | |               \n|/        ---------|---   -        \n-------------|---/ |               \n             | -   |               \n          ---------|---            \n             |     |               \n                              ";
 
     public static string splash =
         "$$\\      $$\\ $$$$$$\\ $$\\   $$\\ $$$$$$$$\\  $$$$$$\\  $$\\   $$\\  $$$$$$\\  $$$$$$$\\  $$$$$$$\\  \n$$$\\    $$$ |\\_$$  _|$$$\\  $$ |$$  _____|$$  __$$\\ $$ |  $$ |$$  __$$\\ $$  __$$\\ $$  __$$\\ \n$$$$\\  $$$$ |  $$ |  $$$$\\ $$ |$$ |      $$ /  \\__|$$ |  $$ |$$ /  $$ |$$ |  $$ |$$ |  $$ |\n$$\\$$\\$$ $$ |  $$ |  $$ $$\\$$ |$$$$$\\    \\$$$$$$\\  $$$$$$$$ |$$$$$$$$ |$$$$$$$  |$$$$$$$  |\n$$ \\$$$  $$ |  $$ |  $$ \\$$$$ |$$  __|    \\____$$\\ $$  __$$ |$$  __$$ |$$  __$$< $$  ____/ \n$$ |\\$  /$$ |  $$ |  $$ |\\$$$ |$$ |      $$\\   $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n$$ | \\_/ $$ |$$$$$$\\ $$ | \\$$ |$$$$$$$$\\ \\$$$$$$  |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n\\__|     \\__|\\______|\\__|  \\__|\\________| \\______/ \\__|  \\__|\\__|  \\__|\\__|  \\__|\\__|      \n                                                                                           \n                                                                                           \n                                                                                           ";
+
     public static void Main(string[] args)
     {
-        
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonFile($"appsettings.json", false, true)
-            .AddJsonFile($"appsettings.Development.json",true,true);
-        
-        
+        builder.Configuration.AddJsonFile("appsettings.json", false, true)
+            .AddJsonFile("appsettings.Development.json", true, true);
+
+
         Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
         Log.Information("\n" + logo);
         Log.Information("\n" + splash);
@@ -36,18 +35,18 @@ public class program
 
         var app = builder.Build();
 
-        
+
         using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            
-            context.Database.Migrate(); 
+
+            context.Database.Migrate();
             Log.Warning("Database migrated and created");
-            
+
             if (!context.User.Any())
-            { 
+            {
                 var db = serviceScope.ServiceProvider.GetRequiredService<IDbUser>();
-                db.SetUser(context, new LoginBody()
+                db.SetUser(context, new LoginBody
                 {
                     email = "welcome@to.mineasharp",
                     password = "admin"
@@ -58,7 +57,7 @@ public class program
             {
                 var auth = serviceScope.ServiceProvider.GetRequiredService<IAuth>();
 
-                context.ApiKeys.Add(new APIKeys()
+                context.ApiKeys.Add(new APIKeys
                 {
                     Key = auth.GenApiKey(),
                     keyName = "MASTER_KEY",
@@ -68,18 +67,13 @@ public class program
 
             context.SavedChanges += (sender, eventArgs) =>
             {
-
                 Log.Warning($"Database saved {eventArgs.EntitiesSavedCount} entities");
             };
-            context.SavingChanges += (sender, eventArgs) =>
-            {
-                Log.Warning("Syncyng db to EF queries");
-            };
-            
+            context.SavingChanges += (sender, eventArgs) => { Log.Warning("Syncyng db to EF queries"); };
+
             context.SaveChanges();
-            
         }
-      
+
         app.UseHttpsRedirection();
         Get.RegisterGets(app, builder);
         Put.RegisterPuts(app);
@@ -87,10 +81,11 @@ public class program
         Delete.RegisterDeletes(app);
 
         app.UseCors("Frontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseApiKeyCheck();
-       
+
         app.UseExceptionHandler(errorApp =>
         {
             errorApp.Run(async context =>
@@ -115,7 +110,7 @@ public class program
 
     public static void RegisterServices(WebApplicationBuilder builder)
     {
-         /*
+        /*
          * Singletons
          */
         builder.Services.AddSingleton<IAuth, Auth>();
@@ -146,9 +141,8 @@ public class program
 
             opt.UseNpgsql(conn.ConnectionString);
             //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
-
         });
-        
+
         builder.Services.AddPooledDbContextFactory<DatabaseContext>(opt =>
         {
             var conn = new NpgsqlConnectionStringBuilder
@@ -160,11 +154,10 @@ public class program
 
             opt.UseNpgsql(conn.ConnectionString);
             //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
-
         });
 
         builder.WebHost.UseUrls("http://0.0.0.0:5000");
-        
+
         //TODO: cors broken
         builder.Services.AddCors(options =>
         {
@@ -177,44 +170,39 @@ public class program
             });
         });
 
-       
+
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
-            {   
-            o.TokenValidationParameters = new TokenValidationParameters
             {
-               
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                ValidAudience = builder.Configuration["Jwt:Audience"],
-                ClockSkew = TimeSpan.Zero
-            };
-            o.Events = new JwtBearerEvents
-            {
-                OnMessageReceived = context =>
+                o.TokenValidationParameters = new TokenValidationParameters
                 {
-                    var token = context.Request.Cookies["jwt"];
-                    if (!string.IsNullOrEmpty(token))
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ClockSkew = TimeSpan.Zero
+                };
+                o.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
                     {
-                        context.Token = token;
+                        var token = context.Request.Cookies["jwt"];
+                        if (!string.IsNullOrEmpty(token)) context.Token = token;
+                        return Task.CompletedTask;
                     }
-                    return Task.CompletedTask;
-                }
-            };
-        });
-        builder.Services.AddAuthorization(options =>
-        {
-        });
+                };
+            });
+        builder.Services.AddAuthorization(options => { });
         builder.Services.AddResponseCompression(options =>
         {
             options.EnableForHttps = true;
             options.Providers.Add<GzipCompressionProvider>();
         });
-        
+
         /*
        builder.Services.AddRateLimiter(opt =>
        {

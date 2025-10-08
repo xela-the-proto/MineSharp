@@ -1,9 +1,6 @@
-﻿using System.Globalization;
-using System.Net;
-using Common.Enums;
+﻿using Common.Enums;
 using Common.Json;
 using Common.Json.Structures;
-using Newtonsoft.Json;
 using RestSharp;
 using Serilog;
 
@@ -11,15 +8,15 @@ namespace Runner.DownloadManager;
 
 public class DownloadDispatch
 {
-    public static string MCJARS = $"https://mcjars.app/api/v2/";
+    public static string MCJARS = "https://mcjars.app/api/v2/";
 
 
     public static void DownloadJar(string version, string path)
     {
         var client = new RestClient(MCJARS);
 
-        string jarBuildManifestAddres = "/builds/" + ServerPlatform.VANILLA + "/" + $"{version}";
-        RestRequest buildDownRequest = new RestRequest(jarBuildManifestAddres);
+        var jarBuildManifestAddres = "/builds/" + ServerPlatform.VANILLA + "/" + $"{version}";
+        var buildDownRequest = new RestRequest(jarBuildManifestAddres);
 
         Log.Information("Downloading main manifest");
         Log.Information(Path.Combine(path, "temp.json"));
@@ -39,7 +36,7 @@ public class DownloadDispatch
                                                                  throw new NullReferenceException(
                                                                      "Got empty array for build manifest!"));
 
-        JarDownloadStructure structure =
+        var structure =
             Deserializer.DeserializeObject<JarDownloadStructure>(Path.Combine(path, "temp.json"));
 
         var serverJar = client.DownloadDataAsync(new RestRequest(structure.builds.First().jarUrl)).Result;

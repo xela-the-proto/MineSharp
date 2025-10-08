@@ -8,12 +8,11 @@ using RestSharp;
 
 namespace Runner.Api;
 
-
 public class CentralBroker
 {
     public static Task UpdateServerStatus(Process process, CancellationTokenSource cancellationToken)
     {
-        HardwareInfo info = new HardwareInfo();
+        var info = new HardwareInfo();
         using (var client = new RestClient("http://localhost:5000"))
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -27,14 +26,15 @@ public class CentralBroker
                 serverStats.parentRunner = Program.RUNNER_PROPERTIES.ShardGuid.ToString();
                 serverStats.status = ServerStatus.STOPPED;
                 serverStats.usage = info.CpuList[0].CurrentClockSpeed;
-                serverStats.wsPort = WebSocketServer._port;
+                serverStats.wsPort = WebSocketServer.Port;
                 Thread.Sleep(3000);
 
                 client.PutAsync(new RestRequest("/api/runners/updateServerStatus").AddBody(
-                    JsonConvert.SerializeObject(serverStats))
-                    .AddHeader("x-api-key",Program.RUNNER_PROPERTIES.token));
+                        JsonConvert.SerializeObject(serverStats))
+                    .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
             }
         }
+
         return Task.CompletedTask;
     }
 }

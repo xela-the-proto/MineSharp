@@ -15,7 +15,7 @@ public class ConfigManager
             token = ""
         };
         File.WriteAllText(Path.Combine(file_root, "config.json"), JsonConvert.SerializeObject(properties));
-        
+
         return properties;
     }
 
@@ -24,5 +24,4 @@ public class ConfigManager
         return JsonConvert.DeserializeObject<RunnerPropertiesStructure>(
             File.ReadAllText(file_root + Path.DirectorySeparatorChar + "config.json"));
     }
-
 }

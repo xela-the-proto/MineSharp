@@ -7,7 +7,7 @@ namespace MineSharpAPI.Modules.Middleware;
 public class ApiKeyCheckMiddleware
 {
     private readonly RequestDelegate _next;
-    
+
     public ApiKeyCheckMiddleware(RequestDelegate next)
     {
         _next = next;
@@ -19,24 +19,26 @@ public class ApiKeyCheckMiddleware
         {
             if (context.Request.Headers.ContainsKey("x-api-key") && context.Request.Path.Value.Contains("/api"))
             {
-                var key =  context.Request.Headers["x-api-key"];
+                var key = context.Request.Headers["x-api-key"];
                 var service = context.RequestServices.GetRequiredService<DatabaseContext>();
                 var keyExist = service.ApiKeys.FirstOrDefaultAsync(x => x.Key == key[0]);
-                
+
                 if (!string.IsNullOrEmpty(key) && keyExist.Result != null)
-                { 
-                    await _next(context);  
-                }else
+                {
+                    await _next(context);
+                }
+                else
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     return Results.Unauthorized();
-                } 
+                }
             }
             else if (!context.Request.Headers.ContainsKey("x-api-key") && context.Request.Path.Value.Contains("/api"))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Results.Unauthorized();
-            }else
+            }
+            else
             {
                 _next(context);
             }

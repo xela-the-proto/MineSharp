@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Bodies;
+using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Interfaces;
 
 namespace MineSharpAPI.Modules.Api;
@@ -17,14 +18,12 @@ public class Auth : IAuth
         WebApplicationBuilder builder, HttpContext httpContext)
     {
         var user = db.User.FirstOrDefault(s => s.Email == inquilino.email);
-        if (user == null || !Hashing.HashingUtils.VerifyHash(inquilino.password, user.PasswordHash))
-        {
+        if (user == null || !HashingUtils.VerifyHash(inquilino.password, user.PasswordHash))
             return Results.Unauthorized();
-        }
 
         var config = builder.Configuration;
         var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]);
-        
+
         var claims = new[]
         {
             new Claim("Id", Guid.NewGuid().ToString()),
@@ -48,23 +47,22 @@ public class Auth : IAuth
         httpContext.Response.Cookies.Append("jwt", token, new CookieOptions
         {
             Expires = DateTime.UtcNow.AddDays(1),
-            HttpOnly = true,   
+            HttpOnly = true,
             Secure = true
         });
 
         return Results.Ok();
-
     }
 
     public string GenApiKey()
     {
-        byte[] bytes = RandomNumberGenerator.GetBytes(32);
+        var bytes = RandomNumberGenerator.GetBytes(32);
 
-        string base64String = Convert.ToBase64String(bytes)
+        var base64String = Convert.ToBase64String(bytes)
             .Replace("+", "-")
             .Replace("/", "_");
-    
-        var keyLength = 32 - "MS-".Length; 
+
+        var keyLength = 32 - "MS-".Length;
 
         return "MS-" + base64String[..keyLength];
     }

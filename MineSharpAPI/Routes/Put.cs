@@ -11,11 +11,10 @@ public class Put
 {
     public static void RegisterPuts(WebApplication app)
     {
-        
         app.MapPut("/api/user/register", async ([FromBody] LoginBody user, HttpContext http,
             DatabaseContext db) =>
         {
-            db.User.Add(new User()
+            db.User.Add(new User
             {
                 Email = user.email,
                 Id = Guid.NewGuid().ToString(),
@@ -23,19 +22,17 @@ public class Put
             });
             await db.SaveChangesAsync();
         }).RequireAuthorization();
-        
-        
 
-        app.MapPut("/api/runners/register", async([FromBody]Runners runnerDetails, HttpContext context, DatabaseContext db) =>
-        {
-            
-        });
-        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context, IDbContextFactory<DatabaseContext> DbFactory) =>
+
+        app.MapPut("/api/runners/register",
+            async ([FromBody] Runners runnerDetails, HttpContext context, DatabaseContext db) => { });
+        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context,
+            IDbContextFactory<DatabaseContext> DbFactory) =>
         {
             await using var db = await DbFactory.CreateDbContextAsync();
 
             var server = new Modules.Api.Server();
-            
+
             var entity = await db.Server.FirstOrDefaultAsync(x => x.id == serverStats.id);
             if (entity == null)
             {
@@ -48,7 +45,6 @@ public class Put
                 server.IsEulaAccepted = serverStats.IsEulaAccepted;
 
                 await db.Server.AddAsync(server);
-
             }
             else
             {
@@ -57,6 +53,7 @@ public class Put
                 entity.wsPort = serverStats.wsPort;
                 db.Server.Update(entity);
             }
+
             await db.SaveChangesAsync();
         });
     }

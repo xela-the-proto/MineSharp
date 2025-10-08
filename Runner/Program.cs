@@ -1,26 +1,18 @@
-﻿
-using System.Diagnostics;
-using System.Reflection;
-using Common.Converters;
-using Common.Enums;
-using Common.Json.Structures;
-using Hardware.Info;
-using Microsoft.AspNetCore.Mvc;
-using MineSharpAPI.Modules.Bodies;
-using Runner.DownloadManager;
+﻿using Common.Json.Structures;
 using Runner.Routes;
 using Runner.RunnerManager;
 using Serilog;
 
 namespace Runner;
-class Program
+
+internal class Program
 {
-    
     //Path to the folder
     public static string ABSOLUTE_SERVER_PATH;
     public static string CONFIG_PATH;
     public static RunnerPropertiesStructure RUNNER_PROPERTIES;
-    static async Task Main()
+
+    private static async Task Main()
     {
         var builder = WebApplication.CreateBuilder();
 
@@ -32,16 +24,15 @@ class Program
             .CreateLogger();
         Log.Information("Switching to Serilog...");
 
-        ConfigChecks(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+        ConfigChecks(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "MinesharpRunner"));
         var app = builder.Build();
-        
+
         Get.registerGets(app);
-        
-        
+
+
         Log.Warning("Runner listening http://localhost:5001/");
         await app.RunAsync("http://localhost:5001");
-        
     }
 
 
@@ -49,13 +40,13 @@ class Program
     {
         CONFIG_PATH = Path.Combine(root);
         Directory.CreateDirectory(CONFIG_PATH);
-        
-        if (!File.Exists(Path.Combine(CONFIG_PATH, "config.json"))) 
-        { 
-            Log.Verbose("Config doesnt exist creating"); 
+
+        if (!File.Exists(Path.Combine(CONFIG_PATH, "config.json")))
+        {
+            Log.Verbose("Config doesnt exist creating");
             RUNNER_PROPERTIES = ConfigManager.WriteConfig(CONFIG_PATH);
         }
+
         RUNNER_PROPERTIES = ConfigManager.ReadConfig(CONFIG_PATH);
     }
-    
 }

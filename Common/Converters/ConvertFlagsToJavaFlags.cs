@@ -4,9 +4,9 @@ public class ConvertFlagsToJavaFlags
 {
     public static List<string> ConvertList(List<string> flags)
     {
-        List<string> javaFlags = new List<string>();
+        var javaFlags = new List<string>();
         //We automatically skip by 1
-        int i = 0;
+        var i = 0;
         foreach (var flag in flags)
         {
             switch (flag)
@@ -19,14 +19,16 @@ public class ConvertFlagsToJavaFlags
                     javaFlags.Add($"-Xms{flags[i + 1]}m");
                     break;
             }
+
             i++;
         }
+
         //Swap the file and ram the other way around
         var temp = javaFlags[0];
         javaFlags[0] = javaFlags[1];
         javaFlags[1] = javaFlags[2];
         javaFlags[2] = temp;
-        
+
         return javaFlags;
     }
 }
