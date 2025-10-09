@@ -12,8 +12,9 @@ public class Put
     public static void RegisterPuts(WebApplication app)
     {
         app.MapPut("/api/user/register", async ([FromBody] LoginBody user, HttpContext http,
-            DatabaseContext db) =>
+            [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
+            var db = database.CreateDbContextAsync().Result;
             db.User.Add(new User
             {
                 Email = user.email,
@@ -25,9 +26,10 @@ public class Put
 
 
         app.MapPut("/api/runners/register",
-            async ([FromBody] Runners runnerDetails, HttpContext context, DatabaseContext db) => { });
+            async ([FromBody] Runners runnerDetails) => { });
+        
         app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context,
-            IDbContextFactory<DatabaseContext> DbFactory) =>
+            [FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
         {
             await using var db = await DbFactory.CreateDbContextAsync();
 

@@ -1,5 +1,6 @@
 ﻿using Common.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using RestSharp;
@@ -11,7 +12,7 @@ public class Post
     public static void RegisterPosts(WebApplication app)
     {
         app.MapPost("/api/Runners/RunServer",
-            async ([FromBody] RunnerBody body, HttpContext context, DatabaseContext db) =>
+            async ([FromBody] RunnerBody body) =>
             {
                 using (var client = new RestClient(body.remoteUrl))
                 {
@@ -21,11 +22,11 @@ public class Post
             });
 
         app.MapPost("/api/Runners/CreateServer",
-            async ([FromBody] RunnerBody body, HttpContext context, DatabaseContext db) => { });
+            async ([FromBody] RunnerBody body) => { });
 
-        app.MapPost("/api/runners/GenAPIToken", async (HttpContext http, DatabaseContext db) =>
+        app.MapPost("/api/runners/GenAPIToken", async (HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
-            var result = Tokens.CreateApiToken(http, db);
+            var result = Tokens.CreateApiToken(http, database.CreateDbContext());
             return result.Result;
         }).RequireAuthorization();
     }

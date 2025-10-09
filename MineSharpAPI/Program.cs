@@ -36,10 +36,11 @@ public class program
         var app = builder.Build();
 
 
-        using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
+        using (var serviceScope = app.Services.GetService<IServiceScopeFactory>()?.CreateScope())
         {
-            var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            var factory = serviceScope.ServiceProvider.GetRequiredService<IDbContextFactory<DatabaseContext>>();
 
+            var context = factory.CreateDbContext();
             context.Database.Migrate();
             Log.Warning("Database migrated and created");
 
@@ -130,18 +131,7 @@ public class program
         /*
          * EF
          */
-        builder.Services.AddDbContext<DatabaseContext>(opt =>
-        {
-            var conn = new NpgsqlConnectionStringBuilder
-            {
-                Host = "localhost:5432",
-                Username = "postgres",
-                Password = ""
-            };
-
-            opt.UseNpgsql(conn.ConnectionString);
-            //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
-        });
+       
 
         builder.Services.AddPooledDbContextFactory<DatabaseContext>(opt =>
         {
@@ -155,7 +145,7 @@ public class program
             opt.UseNpgsql(conn.ConnectionString);
             //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
         });
-
+        
         builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
         //TODO: cors broken

@@ -7,7 +7,6 @@ namespace Runner;
 
 internal class Program
 {
-    //Path to the folder
     public static string ABSOLUTE_SERVER_PATH;
     public static string CONFIG_PATH;
     public static RunnerPropertiesStructure RUNNER_PROPERTIES;
@@ -29,7 +28,6 @@ internal class Program
         var app = builder.Build();
 
         Get.registerGets(app);
-
 
         Log.Warning("Runner listening http://localhost:5001/");
         await app.RunAsync("http://localhost:5001");

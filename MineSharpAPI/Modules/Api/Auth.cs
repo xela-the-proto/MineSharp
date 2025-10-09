@@ -18,7 +18,7 @@ public class Auth : IAuth
         WebApplicationBuilder builder, HttpContext httpContext)
     {
         var user = db.User.FirstOrDefault(s => s.Email == inquilino.email);
-        if (user == null || !HashingUtils.VerifyHash(inquilino.password, user.PasswordHash))
+        if (!httpContext.Request.Cookies.ContainsKey("jwt"))
             return Results.Unauthorized();
 
         var config = builder.Configuration;
