@@ -1,155 +1,79 @@
-using System.Data.SQLite;
 using System.Text;
-using MineSharpAPI.Api;
-using MineSharpAPI.Modules.Interfaces;
-using MineSharpAPI.Routes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
+using MineSharpAPI.Modules.Interfaces;
+using MineSharpAPI.Modules.Middleware;
 using MineSharpAPI.Queries;
-using MySqlConnector;
+using MineSharpAPI.Routes;
+using Npgsql;
 using Serilog;
 
 public class program
 {
-    public static string runnerPath;
+    public static string logo =
+        "                                   \n       |----------------|          \n      /|               /|          \n     / |              / |          \n   -/  |            -/  |          \n  /-   |           /    |          \n /     |          /     |          \n|------|----------------|          \n|     /          |     /           \n|    /           |   -/            \n|  -/            |  -/             \n| /          |   | |               \n|/        ---------|---   -        \n-------------|---/ |               \n             | -   |               \n          ---------|---            \n             |     |               \n                              ";
+
+    public static string splash =
+        "$$\\      $$\\ $$$$$$\\ $$\\   $$\\ $$$$$$$$\\  $$$$$$\\  $$\\   $$\\  $$$$$$\\  $$$$$$$\\  $$$$$$$\\  \n$$$\\    $$$ |\\_$$  _|$$$\\  $$ |$$  _____|$$  __$$\\ $$ |  $$ |$$  __$$\\ $$  __$$\\ $$  __$$\\ \n$$$$\\  $$$$ |  $$ |  $$$$\\ $$ |$$ |      $$ /  \\__|$$ |  $$ |$$ /  $$ |$$ |  $$ |$$ |  $$ |\n$$\\$$\\$$ $$ |  $$ |  $$ $$\\$$ |$$$$$\\    \\$$$$$$\\  $$$$$$$$ |$$$$$$$$ |$$$$$$$  |$$$$$$$  |\n$$ \\$$$  $$ |  $$ |  $$ \\$$$$ |$$  __|    \\____$$\\ $$  __$$ |$$  __$$ |$$  __$$< $$  ____/ \n$$ |\\$  /$$ |  $$ |  $$ |\\$$$ |$$ |      $$\\   $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n$$ | \\_/ $$ |$$$$$$\\ $$ | \\$$ |$$$$$$$$\\ \\$$$$$$  |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n\\__|     \\__|\\______|\\__|  \\__|\\________| \\______/ \\__|  \\__|\\__|  \\__|\\__|  \\__|\\__|      \n                                                                                           \n                                                                                           \n                                                                                           ";
+
     public static void Main(string[] args)
     {
-        
         var builder = WebApplication.CreateBuilder(args);
-        builder.Configuration.AddJsonFile($"appsettings.json", false, true)
-            .AddJsonFile($"appsettings.Development.json",true,true);
+        builder.Configuration.AddJsonFile("appsettings.json", false, true)
+            .AddJsonFile("appsettings.Development.json", true, true);
 
-        //The path of the runner exe
-        //TODO: MAKE THIS ALWAYSBE THE SAME THING   
-        runnerPath = builder.Configuration["Paths:RunnerPath"];
-        
+
         Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-        var csb = new SQLiteConnectionStringBuilder(builder.Configuration["ConnectionStrings:postgres"]);
-        if (csb.ConnectionString == "")
-        {
-            csb.ConnectionString = "Data Source=" + Environment.CurrentDirectory + @"\Local.sqlite";
-            SQLiteConnection.CreateFile(Environment.CurrentDirectory +  @"\Local.sqlite");
-            
-        }
-        
-        /*
-         * Singletons per poter accedere ad una singola istanza delle dependincy injection
-         * https://learn.microsoft.com/it-it/dotnet/core/extensions/dependency-injection
-         * https://refactoring.guru/design-patterns/singleton/csharp/example
-         */
-        builder.Services.AddSingleton<IAuth, Auth>();
-        builder.Services.AddSingleton<IDbUser, DbServer>();
-        /*
-         * Connessionea redis per la cache
-         */
-        builder.Services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = builder.Configuration["ConnectionStrings:Redis"];
-        });
-        /*
-         * Servizio del logger
-         */
-        builder.Services.AddSerilog();
-        /*
-         * Config per la orm con entity framework
-         * https://learn.microsoft.com/it-it/ef/
-         */
-        builder.Services.AddDbContext<DatabaseContext>(opt =>
-        {
-            opt.UseSqlite(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
-        });
+        Log.Information("\n" + logo);
+        Log.Information("\n" + splash);
+        RegisterServices(builder);
 
-        builder.WebHost.UseUrls("http://0.0.0.0:5000");
-        //TODO: cors non funziona
-        builder.Services.AddCors(options =>
-        {
-            //Frontend policy
-            options.AddPolicy("Frontend", policyBuilder =>
-            {
-                policyBuilder.AllowAnyOrigin();
-                policyBuilder.AllowAnyMethod();
-                policyBuilder.AllowAnyHeader();
-            });
-        });
-
-       
-        builder.Services.AddAuthentication(options =>
-        {
-            //Prima abilito l'autenticazione tramite middelware
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(o =>
-        {
-            //Passo i parametri  per validare il token
-            o.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                ValidAudience = builder.Configuration["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey
-                    (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ClockSkew = TimeSpan.Zero
-            };
-            o.Events = new JwtBearerEvents
-            {
-                //Quando mi arriva una richiesta chiedo subito il cookie per confermare se è valido
-                OnMessageReceived = context =>
-                {
-                    var token = context.Request.Cookies["jwt"];
-                    if (!string.IsNullOrEmpty(token)) context.Token = token;
-                    return Task.CompletedTask;
-                }
-            };
-        });
-        builder.Services.AddAuthorization();
-        builder.Services.AddResponseCompression(options =>
-        {
-            options.EnableForHttps = true;
-            options.Providers.Add<GzipCompressionProvider>();
-        });
-
-        /*
-        builder.Services.AddRateLimiter(opt =>
-        {
-            opt.AddFixedWindowLimiter(policyName: "Restrictive", options =>
-            {
-                options.PermitLimit = 4;
-                options.Window = TimeSpan.FromSeconds(10);
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                options.QueueLimit = 2;
-            });
-        });
-        */
         var app = builder.Build();
-       
+
+
         using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
         {
             var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
-            if (context.Database.EnsureCreated())
-            {
-                context.Database.Migrate();
-            }
 
-            if (context.User.Count() == 0)
-            { 
+            context.Database.Migrate();
+            Log.Warning("Database migrated and created");
+
+            if (!context.User.Any())
+            {
                 var db = serviceScope.ServiceProvider.GetRequiredService<IDbUser>();
-                db.SetUser(context, new LoginBody()
+                db.SetUser(context, new LoginBody
                 {
                     email = "welcome@to.mineasharp",
                     password = "admin"
                 });
             }
+
+            if (!context.ApiKeys.Any())
+            {
+                var auth = serviceScope.ServiceProvider.GetRequiredService<IAuth>();
+
+                context.ApiKeys.Add(new APIKeys
+                {
+                    Key = auth.GenApiKey(),
+                    keyName = "MASTER_KEY",
+                    OwnerID = "0"
+                });
+            }
+
+            context.SavedChanges += (sender, eventArgs) =>
+            {
+                Log.Warning($"Database saved {eventArgs.EntitiesSavedCount} entities");
+            };
+            context.SavingChanges += (sender, eventArgs) => { Log.Warning("Syncyng db to EF queries"); };
+
+            context.SaveChanges();
         }
-      
+
         app.UseHttpsRedirection();
         Get.RegisterGets(app, builder);
         Put.RegisterPuts(app);
@@ -157,16 +81,11 @@ public class program
         Delete.RegisterDeletes(app);
 
         app.UseCors("Frontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
-        //Middleware custom
-        /*
-        app.Use(async (con, next) =>
-        {
-        
-            await next(con);
-        });
-        */
+        app.UseApiKeyCheck();
+
         app.UseExceptionHandler(errorApp =>
         {
             errorApp.Run(async context =>
@@ -187,5 +106,114 @@ public class program
         //app.UseRateLimiter();
         app.UseResponseCompression();
         app.Run();
+    }
+
+    public static void RegisterServices(WebApplicationBuilder builder)
+    {
+        /*
+         * Singletons
+         */
+        builder.Services.AddSingleton<IAuth, Auth>();
+        builder.Services.AddScoped<IAuth, Auth>();
+        builder.Services.AddSingleton<IDbUser, DbServer>();
+        /*
+         * Redis cache
+         */
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = builder.Configuration["ConnectionStrings:Redis"];
+        });
+        /*
+         * Logging
+         */
+        builder.Services.AddSerilog();
+        /*
+         * EF
+         */
+        builder.Services.AddDbContext<DatabaseContext>(opt =>
+        {
+            var conn = new NpgsqlConnectionStringBuilder
+            {
+                Host = "localhost:5432",
+                Username = "postgres",
+                Password = ""
+            };
+
+            opt.UseNpgsql(conn.ConnectionString);
+            //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
+        });
+
+        builder.Services.AddPooledDbContextFactory<DatabaseContext>(opt =>
+        {
+            var conn = new NpgsqlConnectionStringBuilder
+            {
+                Host = "localhost:5432",
+                Username = "postgres",
+                Password = ""
+            };
+
+            opt.UseNpgsql(conn.ConnectionString);
+            //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
+        });
+
+        builder.WebHost.UseUrls("http://0.0.0.0:5000");
+
+        //TODO: cors broken
+        builder.Services.AddCors(options =>
+        {
+            //Frontend policy
+            options.AddPolicy("Frontend", policyBuilder =>
+            {
+                policyBuilder.AllowAnyOrigin();
+                policyBuilder.AllowAnyMethod();
+                policyBuilder.AllowAnyHeader();
+            });
+        });
+
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ClockSkew = TimeSpan.Zero
+                };
+                o.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.Request.Cookies["jwt"];
+                        if (!string.IsNullOrEmpty(token)) context.Token = token;
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+        builder.Services.AddAuthorization(options => { });
+        builder.Services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<GzipCompressionProvider>();
+        });
+
+        /*
+       builder.Services.AddRateLimiter(opt =>
+       {
+           opt.AddFixedWindowLimiter(policyName: "Restrictive", options =>
+           {
+               options.PermitLimit = 4;
+               options.Window = TimeSpan.FromSeconds(10);
+               options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+               options.QueueLimit = 2;
+           });
+       });
+       */
     }
 }

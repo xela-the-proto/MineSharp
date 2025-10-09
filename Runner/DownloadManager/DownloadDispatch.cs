@@ -1,34 +1,48 @@
-﻿using System.Net;
-using System.Text.Json;
-using Common.Enums;
+﻿using Common.Enums;
 using Common.Json;
 using Common.Json.Structures;
+using RestSharp;
+using Serilog;
 
 namespace Runner.DownloadManager;
 
 public class DownloadDispatch
 {
-    public static string MCJARS { get; } = $"https://mcjars.app/api/v2/builds/";
+    public static string MCJARS = "https://mcjars.app/api/v2/";
 
 
     public static void DownloadJar(string version, string path)
     {
-      Program.ABSOLUTE_SERVER_PATH = path.Substring(0, path.LastIndexOf(@"\") + 1);
-      var client = new WebClient();
-      var addres = MCJARS + ServerPlatform.VANILLA + $"/{version}";
-      
-      Console.WriteLine("Downloading main manifest");
-      Console.WriteLine(Program.ABSOLUTE_SERVER_PATH);
-      
-      if (!Directory.Exists(Program.ABSOLUTE_SERVER_PATH))
-      {
-          Directory.CreateDirectory(Program.ABSOLUTE_SERVER_PATH);
-      }
-      client.DownloadFile(addres,Program.ABSOLUTE_SERVER_PATH + "\\temp.json");
-      
-      
-      var structure = Deserializer.DeserializeObject<JarDownloadStructure>(Program.ABSOLUTE_SERVER_PATH + ".\\temp.json");
-      Console.WriteLine("Downloading jar");
-      client.DownloadFile(structure.builds.First().jarUrl,Program.ABSOLUTE_SERVER_PATH + "\\server.jar");
+        var client = new RestClient(MCJARS);
+
+        var jarBuildManifestAddres = "/builds/" + ServerPlatform.VANILLA + "/" + $"{version}";
+        var buildDownRequest = new RestRequest(jarBuildManifestAddres);
+
+        Log.Information("Downloading main manifest");
+        Log.Information(Path.Combine(path, "temp.json"));
+
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+        else if (File.Exists(Path.Combine(path, "server.jar")))
+        {
+            Log.Information("server already exists");
+            return;
+        }
+
+        var buildManifestFileInBytes = client.DownloadData(buildDownRequest);
+        File.WriteAllBytesAsync(Path.Combine(path, "temp.json"), buildManifestFileInBytes ??
+                                                                 throw new NullReferenceException(
+                                                                     "Got empty array for build manifest!"));
+
+        var structure =
+            Deserializer.DeserializeObject<JarDownloadStructure>(Path.Combine(path, "temp.json"));
+
+        var serverJar = client.DownloadDataAsync(new RestRequest(structure.builds.First().jarUrl)).Result;
+        File.WriteAllBytesAsync(Path.Combine(path, "server.jar"), serverJar ??
+                                                                  throw new NullReferenceException(
+                                                                      "Got empty array for java file!"));
+        File.WriteAllTextAsync(Path.Combine(path, "guid.txt"), Guid.NewGuid().ToString());
     }
 }

@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
-using MineSharpAPI.Modules.Bodies;
+﻿using Common.Enums;
 using Microsoft.AspNetCore.Mvc;
-using PusherServer;
+using MineSharpAPI.Modules.Api;
+using MineSharpAPI.Modules.Bodies;
+using RestSharp;
 
 namespace MineSharpAPI.Routes;
 
@@ -9,28 +10,23 @@ public class Post
 {
     public static void RegisterPosts(WebApplication app)
     {
-        app.MapPost("/api/Runners/RunServer", async ([FromBody]RunnerBody body) =>
+        app.MapPost("/api/Runners/RunServer",
+            async ([FromBody] RunnerBody body, HttpContext context, DatabaseContext db) =>
+            {
+                using (var client = new RestClient(body.remoteUrl))
+                {
+                    if (string.IsNullOrEmpty(body.platform)) body.platform = ServerPlatform.VANILLA.ToString();
+                    client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
+                }
+            });
+
+        app.MapPost("/api/Runners/CreateServer",
+            async ([FromBody] RunnerBody body, HttpContext context, DatabaseContext db) => { });
+
+        app.MapPost("/api/runners/GenAPIToken", async (HttpContext http, DatabaseContext db) =>
         {
-            var runner = new Process();
-            runner.StartInfo.FileName = program.runnerPath;
-            runner.StartInfo.Arguments = "-v " + body.version + " -f " + body.path + " -r " + body.ram ;
-            runner.StartInfo.CreateNoWindow = false;
-            runner.StartInfo.UseShellExecute = true;    
-            runner.Start();
-        });
-        
-        /*
-        app.MapPost("/api/msg/saveToDb", async ([FromBody]MessageBody request, Pusher pusher) =>
-        {
-            var response = await pusher.TriggerAsync(
-                "chat-channel",  // Nome del canale
-                "new-message",   // Nome dell'evento
-                new { message = request.Text, sender = request.CoinquilinoId }
-            );
-            
-            return Results.Ok(response);
-        });
-        */
-        
+            var result = Tokens.CreateApiToken(http, db);
+            return result.Result;
+        }).RequireAuthorization();
     }
 }

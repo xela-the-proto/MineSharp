@@ -1,23 +1,19 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using MineSharpAPI.Api;
+﻿using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Hashing;
-using MineSharpAPI.Modules.Helpers;
 using MineSharpAPI.Modules.Interfaces;
-using Serilog;
 
 namespace MineSharpAPI.Queries;
 
 public class DbServer : IDbUser
 {
-
-    public UserDB GetUser(DatabaseContext context, UserDB inquilino)
+    public User GetUser(DatabaseContext context, User inquilino)
     {
-        UserDB user = null;
+        User user = null;
         try
         {
             var file = "x";
-            var query =  context.User.First(s => s.UserId == inquilino.UserId);
+            var query = context.User.First(s => s.Id == inquilino.Id);
             return query;
         }
         catch (Exception e)
@@ -29,18 +25,20 @@ public class DbServer : IDbUser
 
     public void SetUser(DatabaseContext context, LoginBody userLogin)
     {
-        var hash = Hashing.HashString(userLogin.password);
-        var user = new UserDB()
+        var hash = HashingUtils.HashString(userLogin.password);
+        var user = new User
         {
-            UserId = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid().ToString(),
             Email = userLogin.email,
             PasswordHash = hash
         };
         context.User.Add(user);
         context.SaveChanges();
     }
-    public void RmUser(DatabaseContext context, UserDB user)
+
+    public void RmUser(DatabaseContext context, User user)
     {
+        context.User.Remove(user);
         throw new NotImplementedException();
     }
 }
