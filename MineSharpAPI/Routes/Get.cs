@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Common.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
@@ -24,11 +25,18 @@ public class Get
 
 
         app.MapGet("/auth/",
-            async ([FromBody] LoginBody user, HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database, IAuth auth,
-                [FromServices] IDbUser userTable) =>
+            async ([FromBody] LoginBody user, HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database, IAuth auth) =>
             {
                 var result = auth.Authenticate(database.CreateDbContext(), user, builder, http).Result;
-                return result;
+                return result; 
             });
+
+        app.MapGet("/api/runners/getRunningServers", async ( [FromServices]IDbContextFactory<DatabaseContext> database) =>
+        {
+            var db = database.CreateDbContext();
+
+            var servers = db.Server.Where(x => x.status == ServerStatus.RUNNING);
+            return servers.ToList();
+        });
     }
 }

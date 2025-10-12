@@ -17,7 +17,7 @@ public class Post
                 using (var client = new RestClient(body.remoteUrl))
                 {
                     if (string.IsNullOrEmpty(body.platform)) body.platform = ServerPlatform.VANILLA.ToString();
-                    client.PostAsync(new RestRequest("/startServer", Method.Post).AddBody(body));
+                    client.Post(new RestRequest("/startServer", Method.Post).AddBody(body));
                 }
             });
 
