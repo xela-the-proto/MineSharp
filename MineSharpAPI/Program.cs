@@ -79,7 +79,7 @@ public class Program
         Post.RegisterPosts(app);
         Delete.RegisterDeletes(app);
 
-        app.UseCors("Frontend");
+        //app.UseCors("Frontend");
 
         app.UseAuthentication();
         app.UseAuthorization();

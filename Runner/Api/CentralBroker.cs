@@ -3,6 +3,7 @@ using Common.Enums;
 using Common.WebSocket;
 using Hardware.Info;
 using MineSharpAPI.Modules.Bodies;
+using MineSharpAPI.Modules.Helpers;
 using Newtonsoft.Json;
 using RestSharp;
 
@@ -10,21 +11,23 @@ namespace Runner.Api;
 
 public class CentralBroker
 {
-    public static Task UpdateServerStatus(Process process, CancellationTokenSource cancellationToken)
+
+    public Task UpdateServerStatus(Process process, RichCancellationToken cancellationToken)
     {
+        var serverStats = new Server();
         var info = new HardwareInfo();
         using (var client = new RestClient("http://localhost:5000"))
         {
             while (!cancellationToken.IsCancellationRequested)
             {
                 info.RefreshAll();
-                var serverStats = new Server();
+               
                 serverStats.id = File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory, "guid.txt"));
                 serverStats.name = process.StartInfo.WorkingDirectory.Substring(
                     process.StartInfo.WorkingDirectory.IndexOf(Path.DirectorySeparatorChar)
                 );
                 serverStats.parentRunner = Program.RUNNER_PROPERTIES.ShardGuid.ToString();
-                serverStats.status = ServerStatus.STOPPED;
+                serverStats.status = cancellationToken.CurrentServerStatus;
                 serverStats.usage = info.CpuList[0].CurrentClockSpeed;
                 serverStats.wsPort = WebSocketServer.Port;
                 Thread.Sleep(3000);
@@ -33,6 +36,26 @@ public class CentralBroker
                         JsonConvert.SerializeObject(serverStats))
                     .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
             }
+            
+            //If we exited many things could have happened
+            //1. the socket errored out
+            //2. the server stopped
+            //3. the runner had an error
+            //By extending the Cancellation Token to add some helpers 
+            //we can use it as a way to communicate between all methods what the server is doing;
+
+            switch (cancellationToken.ExitReason)
+            {
+                case "ERR_SOCKET_STREAM":
+                    serverStats.status = ServerStatus.SOCKET_ERROR;
+                    break;
+                case "ERR_GENERIC_RUNNER_ERROR":
+                    serverStats.status = ServerStatus.RUNNER_ERROR;
+                    break;
+            }
+            client.PutAsync(new RestRequest("/api/runners/updateServerStatus").AddBody(
+                    JsonConvert.SerializeObject(serverStats))
+                .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
         }
 
         return Task.CompletedTask;

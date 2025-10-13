@@ -1,21 +1,23 @@
 ﻿using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
+using Common.Enums;
+using MineSharpAPI.Modules.Helpers;
 using Serilog;
 using WatsonWebsocket;
 
 namespace Common.WebSocket;
 
-public abstract class WebSocketServer
+public class WebSocketServer
 {
     private static WatsonWsServer? _server;
     public static int Port;
-    private static CancellationTokenSource? _cts;
+    private static RichCancellationToken? _cts;
     private static CancellationToken _ct;
     private static Guid _clientGuid;
     private static System.Diagnostics.Process? _serverProcess;
 
-    public static Task StartWs(System.Diagnostics.Process process, CancellationTokenSource token)
+    public Task StartWs(System.Diagnostics.Process process, RichCancellationToken token)
     {
         Port = Random.Shared.Next(49152, 65535);
         try
@@ -71,6 +73,10 @@ public abstract class WebSocketServer
             if (!string.IsNullOrEmpty(args.Data))
                 _server.SendAsync(_clientGuid, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
             Console.WriteLine(args.Data);
+            if (args.Data.Contains("For help, type \"help\""))
+            {
+                _cts.CurrentServerStatus = ServerStatus.RUNNING;
+            }
         }
         catch (ArgumentNullException e)
         {
@@ -84,7 +90,13 @@ public abstract class WebSocketServer
         {
             if (!string.IsNullOrEmpty(args.Data))
                 _server.SendAsync(_clientGuid, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
+            
             Console.WriteLine(args.Data);
+            
+            if (args.Data.Contains("For help, type \"help\""))
+            {
+                _cts.CurrentServerStatus = ServerStatus.RUNNING;
+            }
         }
         catch (ArgumentNullException e)
         {

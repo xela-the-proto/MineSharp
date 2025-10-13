@@ -1,5 +1,7 @@
-﻿using Common.Process;
+﻿using Common.Enums;
+using Common.Process;
 using Common.WebSocket;
+using MineSharpAPI.Modules.Helpers;
 using Runner.Api;
 using Serilog;
 
@@ -7,20 +9,25 @@ namespace Runner.RunnerManager;
 
 public class ServerRunner
 {
-    private static CancellationTokenSource _cts;
+    private static RichCancellationToken _cts;
 
     public void StartServerProcess(List<string> args, string workdir, bool eulaAccept)
     {
+        var broker = new CentralBroker();
+        var ws = new WebSocketServer();
         try
         {
+        
             Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
 
             Log.Verbose("Creating canc token");
-            var cts = new CancellationTokenSource();
+            var cts = new RichCancellationToken();
             var ct = cts.Token;
             _cts = cts;
+            _cts.Changed += CtsOnChanged;
+            _cts.CurrentServerStatus = ServerStatus.STARTING;
             if (eulaAccept)
             {
                 process.Start();
@@ -35,8 +42,8 @@ public class ServerRunner
             }
 
             var wsThread = new Task(() =>
-                WebSocketServer.StartWs(process, cts));
-            var updateThread = new Task(() => CentralBroker.UpdateServerStatus(process, cts));
+                ws.StartWs(process, cts));
+            var updateThread = new Task(() => broker.UpdateServerStatus(process, cts));
 
             Log.Debug("Start server");
             process.Start();
@@ -44,9 +51,8 @@ public class ServerRunner
             wsThread.Start();
             Log.Debug("Start monitoring");
             updateThread.Start();
+            
 
-
-            //TODO: Memory leak?
             while (!process.HasExited) ;
 
             Log.Information("Cancelling");
@@ -56,18 +62,21 @@ public class ServerRunner
             if (e.Message.Contains("Value cannot be null. (Parameter 'data')"))
             {
                 Log.Warning("Received null as data to send down socket, is the server shutting down?");
+                _cts.ExitReason = "ERR_SOCKET_STREAM";
                 _cts.Cancel();
-            }
-            else
-            {
-                throw;
             }
         }
         catch (Exception e)
         {
             Log.Fatal(e.Message);
+            _cts.ExitReason = "ERR_GENERIC_RUNNER_ERROR";
             _cts.Cancel();
             throw;
         }
+    }
+
+    private void CtsOnChanged(object? sender, CancellationEventArgs e)
+    {
+        Log.Warning($"Cts Changed! {e.CurrentServerStatus} {e.Reason} {e.Token}");
     }
 }
