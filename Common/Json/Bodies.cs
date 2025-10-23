@@ -48,3 +48,9 @@ public record Server
 
     public bool IsEulaAccepted { get; set; }
 }
+
+public record EulaUpdateBody
+{
+    public string serverId { get; set; }
+    public bool isEulaAccepted { get; set; }
+}

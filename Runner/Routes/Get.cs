@@ -1,5 +1,6 @@
 using Common.Converters;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Bodies;
 using Runner.DownloadManager;
 using Runner.RunnerManager;
@@ -8,7 +9,7 @@ namespace Runner.Routes;
 
 public class Get
 {
-    public static void registerGets(WebApplication app)
+    public static void RegisterGets(WebApplication app)
     {
         app.MapPost("/startServer", async ([FromBody] RunnerBody tuple) =>
         {
@@ -22,6 +23,8 @@ public class Get
             return Results.Ok();
         });
 
-        app.MapGet("/debug", async ([FromBody] RunnerBody tuple) => { });
+        
+
+        
     }
 }

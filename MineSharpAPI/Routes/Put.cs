@@ -58,5 +58,22 @@ public class Put
 
             await db.SaveChangesAsync();
         });
+        
+        app.MapPut("/api/runners/updateEulaStatus", async ([FromBody] EulaUpdateBody body, [FromServices]IDbContextFactory<DatabaseContext> database) =>
+        {
+            var db = database.CreateDbContext();
+
+            var server = await db.Server.FirstOrDefaultAsync(x => x.id == body.serverId);
+            
+            if (server == null)
+            {
+                return Results.NotFound(new { message = "Server not found" });
+            }
+
+            server.IsEulaAccepted = body.isEulaAccepted;
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new { message = "EULA status updated successfully", server });
+        });
     }
 }

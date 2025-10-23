@@ -15,15 +15,6 @@ public class RichCancellationToken : CancellationTokenSource
         }
     }    
     
-    public ServerStatus CurrentServerStatus
-    {
-        get { return CurrentServerStatus;}
-        set
-        {
-            CurrentServerStatus = value;
-            OnChanged(new CancellationEventArgs(this.ExitReason, this.Token,value));
-        }
-    }
 }
 
 public class CancellationEventArgs : EventArgs

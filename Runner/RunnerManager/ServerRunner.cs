@@ -1,7 +1,9 @@
-﻿using Common.Enums;
+﻿using System.Net;
 using Common.Process;
 using Common.WebSocket;
 using MineSharpAPI.Modules.Helpers;
+using Newtonsoft.Json;
+using RestSharp;
 using Runner.Api;
 using Serilog;
 
@@ -15,20 +17,24 @@ public class ServerRunner
     {
         var broker = new CentralBroker();
         var ws = new WebSocketServer();
+        var client = new RestClient("http://localhost:5000");
         try
         {
-        
+            
+            
             Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
+            
+            var result  = client.GetAsync(new RestRequest("/api/runners/getEulaStatus")
+                .AddBody(File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory, "guid.txt")))
+                .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token)).Result;
 
             Log.Verbose("Creating canc token");
             var cts = new RichCancellationToken();
-            var ct = cts.Token;
             _cts = cts;
-            _cts.Changed += CtsOnChanged;
-            _cts.CurrentServerStatus = ServerStatus.STARTING;
-            if (eulaAccept)
+            
+            if (result.StatusCode == HttpStatusCode.NotFound || result.Content == "false")
             {
                 process.Start();
                 while (!process.HasExited) ;
@@ -40,6 +46,9 @@ public class ServerRunner
                 Log.Verbose("Write and close stream");
                 File.WriteAllText(path, txt);
             }
+            
+            broker.UpdateServerEulaStatus(process);
+            
 
             var wsThread = new Task(() =>
                 ws.StartWs(process, cts));
@@ -73,10 +82,5 @@ public class ServerRunner
             _cts.Cancel();
             throw;
         }
-    }
-
-    private void CtsOnChanged(object? sender, CancellationEventArgs e)
-    {
-        Log.Warning($"Cts Changed! {e.CurrentServerStatus} {e.Reason} {e.Token}");
     }
 }

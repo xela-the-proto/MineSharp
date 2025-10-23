@@ -27,7 +27,7 @@ internal class Program
             "MinesharpRunner"));
         var app = builder.Build();
 
-        Get.registerGets(app);
+        Get.RegisterGets(app);
 
         Log.Warning("Runner listening http://localhost:5001/");
         await app.RunAsync("http://localhost:5001");

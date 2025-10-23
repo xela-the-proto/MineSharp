@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
-using Common.Enums;
 using MineSharpAPI.Modules.Helpers;
 using Serilog;
 using WatsonWebsocket;
@@ -20,6 +19,7 @@ public class WebSocketServer
     public Task StartWs(System.Diagnostics.Process process, RichCancellationToken token)
     {
         Port = Random.Shared.Next(49152, 65535);
+        Log.Debug("Opening ws on port " + Port);
         try
         {
             Log.Information("Starting Watson ws");
@@ -75,7 +75,6 @@ public class WebSocketServer
             Console.WriteLine(args.Data);
             if (args.Data.Contains("For help, type \"help\""))
             {
-                _cts.CurrentServerStatus = ServerStatus.RUNNING;
             }
         }
         catch (ArgumentNullException e)
@@ -95,7 +94,6 @@ public class WebSocketServer
             
             if (args.Data.Contains("For help, type \"help\""))
             {
-                _cts.CurrentServerStatus = ServerStatus.RUNNING;
             }
         }
         catch (ArgumentNullException e)

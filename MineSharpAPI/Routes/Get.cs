@@ -38,5 +38,19 @@ public class Get
             var servers = db.Server.Where(x => x.status == ServerStatus.RUNNING);
             return servers.ToList();
         });
+        
+        app.MapGet("/api/runners/getEulaStatus", async ([FromBody]string id, [FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
+        {
+            var db = database.CreateDbContext();
+
+            var server = await db.Server.FirstOrDefaultAsync(x => x.id == id );
+
+            if (server == null)
+            {
+                return Results.NotFound("Database doesnt contain record for this server");
+            }
+
+            return Results.Ok(server.IsEulaAccepted);
+        });
     }
 }
