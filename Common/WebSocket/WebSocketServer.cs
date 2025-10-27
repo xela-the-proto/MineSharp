@@ -16,9 +16,16 @@ public class WebSocketServer
     private static Guid _clientGuid;
     private static System.Diagnostics.Process? _serverProcess;
 
-    public Task StartWs(System.Diagnostics.Process process, RichCancellationToken token)
+    public Task StartWs(System.Diagnostics.Process process, RichCancellationToken token, int port = 0)
     {
-        Port = Random.Shared.Next(49152, 65535);
+        if (port != 0)
+        {
+            Port = port;
+        }
+        else
+        {
+            Port = Random.Shared.Next(49152, 65535);
+        }
         Log.Debug("Opening ws on port " + Port);
         try
         {
@@ -70,11 +77,19 @@ public class WebSocketServer
     {
         try
         {
-            if (!string.IsNullOrEmpty(args.Data))
+            if (string.IsNullOrEmpty(args.Data))
+            {
                 _server.SendAsync(_clientGuid, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
-            Console.WriteLine(args.Data);
+            }
+            else
+            {
+                _server.SendAsync(_clientGuid, args.Data, WebSocketMessageType.Text, _ct);
+
+            }
+            //Console.WriteLine(args.Data);
             if (args.Data.Contains("For help, type \"help\""))
             {
+                //TODO: Set status to running
             }
         }
         catch (ArgumentNullException e)
@@ -87,10 +102,15 @@ public class WebSocketServer
     {
         try
         {
-            if (!string.IsNullOrEmpty(args.Data))
+            if (string.IsNullOrEmpty(args.Data))
+            {
                 _server.SendAsync(_clientGuid, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
-            
-            Console.WriteLine(args.Data);
+            }
+            else
+            {
+                _server.SendAsync(_clientGuid, args.Data, WebSocketMessageType.Text, _ct);
+
+            }
             
             if (args.Data.Contains("For help, type \"help\""))
             {

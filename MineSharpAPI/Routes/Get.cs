@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
+using Serilog;
 
 namespace MineSharpAPI.Routes;
 
@@ -39,18 +40,22 @@ public class Get
             return servers.ToList();
         });
         
-        app.MapGet("/api/runners/getEulaStatus", async ([FromBody]string id, [FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
+        app.MapGet("/api/runners/getEulaStatus", async ([FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
         {
+            
             var db = database.CreateDbContext();
+            Log.Warning("a");
+            var id = new StreamReader(context.Request.Body);
 
-            var server = await db.Server.FirstOrDefaultAsync(x => x.id == id );
+            var server = await db.Server.FirstOrDefaultAsync(x => x.id ==  id.ReadToEndAsync().Result);
+            id.Close();
 
             if (server == null)
             {
                 return Results.NotFound("Database doesnt contain record for this server");
             }
 
-            return Results.Ok(server.IsEulaAccepted);
+            return Results.Ok(server);
         });
     }
 }

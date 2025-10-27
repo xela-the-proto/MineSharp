@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Common.Process;
 using Common.WebSocket;
+using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Helpers;
 using Newtonsoft.Json;
 using RestSharp;
@@ -15,6 +16,7 @@ public class ServerRunner
 
     public void StartServerProcess(List<string> args, string workdir, bool eulaAccept)
     {
+        Task wsThread;
         var broker = new CentralBroker();
         var ws = new WebSocketServer();
         var client = new RestClient("http://localhost:5000");
@@ -26,15 +28,16 @@ public class ServerRunner
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
             
-            var result  = client.GetAsync(new RestRequest("/api/runners/getEulaStatus")
-                .AddBody(File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory, "guid.txt")))
+            var result  = client.ExecuteGetAsync<Server>(new RestRequest("/api/runners/getEulaStatus")
+                .AddParameter("text/plain",File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory,
+                    "guid.txt")), ParameterType.RequestBody)
                 .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token)).Result;
 
             Log.Verbose("Creating canc token");
             var cts = new RichCancellationToken();
             _cts = cts;
             
-            if (result.StatusCode == HttpStatusCode.NotFound || result.Content == "false")
+            if (result.StatusCode == HttpStatusCode.NotFound || result.Data.IsEulaAccepted == false)
             {
                 process.Start();
                 while (!process.HasExited) ;
@@ -46,12 +49,16 @@ public class ServerRunner
                 Log.Verbose("Write and close stream");
                 File.WriteAllText(path, txt);
             }
-            
-            broker.UpdateServerEulaStatus(process);
-            
 
-            var wsThread = new Task(() =>
-                ws.StartWs(process, cts));
+            if (result.Data.wsPort != 0 && result.Data.wsPort != null)
+            {
+                wsThread = new Task(() =>
+                    ws.StartWs(process, cts, result.Data.wsPort));
+            }
+            else
+            {
+                wsThread = new Task(() => ws.StartWs(process, cts));
+            }
             var updateThread = new Task(() => broker.UpdateServerStatus(process, cts));
 
             Log.Debug("Start server");

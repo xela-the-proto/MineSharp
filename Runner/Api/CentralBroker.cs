@@ -29,6 +29,8 @@ public class CentralBroker
                 serverStats.parentRunner = Program.RUNNER_PROPERTIES.ShardGuid.ToString();
                 serverStats.usage = info.CpuList[0].CurrentClockSpeed;
                 serverStats.wsPort = WebSocketServer.Port;
+                //If were at this point we are sure the eula got accepted
+                serverStats.IsEulaAccepted = true;
                 Thread.Sleep(3000);
 
                 client.PutAsync(new RestRequest("/api/runners/updateServerStatus").AddBody(
@@ -58,20 +60,5 @@ public class CentralBroker
         }
 
         return Task.CompletedTask;
-    }
-
-    public void UpdateServerEulaStatus(Process process)
-    {
-         var serverStats = new EulaUpdateBody();
-        var info = new HardwareInfo();
-        using (var client = new RestClient("http://localhost:5000"))
-        {
-                serverStats.serverId = File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory, "guid.txt"));
-                serverStats.isEulaAccepted = true;
-
-                client.PutAsync(new RestRequest("/api/runners/updateEulaStatus").AddBody(
-                        JsonConvert.SerializeObject(serverStats))
-                    .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
-        }
     }
 }
