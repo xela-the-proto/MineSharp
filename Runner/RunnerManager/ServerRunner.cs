@@ -3,7 +3,6 @@ using Common.Process;
 using Common.WebSocket;
 using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Helpers;
-using Newtonsoft.Json;
 using RestSharp;
 using Runner.Api;
 using Serilog;
@@ -22,8 +21,6 @@ public class ServerRunner
         var client = new RestClient("http://localhost:5000");
         try
         {
-            
-            
             Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
@@ -40,7 +37,7 @@ public class ServerRunner
             if (result.StatusCode == HttpStatusCode.NotFound || result.Data.IsEulaAccepted == false)
             {
                 process.Start();
-                while (!process.HasExited) ;
+                while (!process.HasExited);
                 Log.Verbose("Exited first loop for eula, changing file content");
                 var path = Path.Combine(workdir, "eula.txt");
                 Log.Verbose("Opening file stream");

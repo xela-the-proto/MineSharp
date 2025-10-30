@@ -16,8 +16,4 @@
         <PackageReference Include="WatsonWebsocket" Version="4.1.6"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Utils\Db\"/>
-    </ItemGroup>
-
 </Project>

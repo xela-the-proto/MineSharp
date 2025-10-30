@@ -12,13 +12,6 @@ public class Get
 {
     public static void RegisterGets(WebApplication app, WebApplicationBuilder builder)
     {
-        /*
-        app.MapGet("api/user/getDetails", async ([FromBody] InquilinoDB inquilino, DatabaseContext db, [FromServices]IDbInquilino dbInquilino) =>
-        {
-            var result = dbInquilino.GetInquilino(db, inquilino);
-            return result;
-        }).RequireAuthorization();
-        */
         app.MapGet("/debug", async (HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
             

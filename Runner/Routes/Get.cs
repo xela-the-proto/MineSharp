@@ -22,9 +22,5 @@ public class Get
                 tuple.eulaAccept);
             return Results.Ok();
         });
-
-        
-
-        
     }
 }
