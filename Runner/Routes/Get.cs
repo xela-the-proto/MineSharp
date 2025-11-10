@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Common.Converters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,16 @@ public class Get
             runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1],
                 tuple.eulaAccept);
             return Results.Ok();
+        });
+
+        app.MapPost("/stopServer", async ([FromBody] string id) =>
+        {
+            Process process = Process.GetProcessById(int.Parse(id));
+            process.StandardInput.WriteLine("stop");
+            while (!process.HasExited)
+            {
+                
+            }
         });
     }
 }
