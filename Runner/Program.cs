@@ -44,7 +44,7 @@ internal class Program
             Log.Verbose("Config doesnt exist creating");
             RUNNER_PROPERTIES = ConfigManager.WriteConfig(CONFIG_PATH);
         }
-
+ 
         RUNNER_PROPERTIES = ConfigManager.ReadConfig(CONFIG_PATH);
     }
 }
