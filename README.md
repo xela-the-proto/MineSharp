@@ -1,7 +1,9 @@
-# MineSharpAPI
+# MineSharp: minecraft hosting made easy
 
 MineSharpAPI is an experimental C# project inspired by **Pterodactyl** and similar server management panels.  
 It is currently being developed as a learning and experimental platform for managing Minecraft servers using .NET
+
+## The core idea behind the project is making a strong base on the backend and a infinetly customizable frontend
 
 > ⚠️ **Important:** This project is still in early development.  
 > It is **not ready for production use** and should not be used in any live or critical environment.
@@ -66,12 +68,6 @@ While currently limited in features, the goal is to create a fast and user frien
 ### 🔹 Developer & Integration Tools
 - [ ] REST API documentation (Swagger / OpenAPI)  
 - [x] WebSocket layer for live status updates  
-
-### 🔹 Frontend (Future)
-- [ ] Web dashboard (possibly React or Blazor)  
-- [ ] User session management  
-- [ ] Minimal control panel interface  
-
 ---
 
 ## ⚠️ Disclaimer
