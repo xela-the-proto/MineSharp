@@ -2,8 +2,8 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Common.Json;
 using Microsoft.IdentityModel.Tokens;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Interfaces;
 

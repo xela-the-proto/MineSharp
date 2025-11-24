@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Common.Enums;
+using Common.Json;
 using Common.WebSocket;
 using Hardware.Info;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Helpers;
 using Newtonsoft.Json;
 using RestSharp;
@@ -18,6 +18,7 @@ public class CentralBroker
         var info = new HardwareInfo();
         using (var client = new RestClient("http://localhost:5000"))
         {
+            serverStats.ProcessId = process.Id;
             while (!cancellationToken.IsCancellationRequested)
             {
                 info.RefreshAll();
@@ -33,8 +34,8 @@ public class CentralBroker
                 serverStats.IsEulaAccepted = true;
                 Thread.Sleep(3000);
 
-                client.PutAsync(new RestRequest("/api/runners/updateServerStatus").AddBody(
-                        JsonConvert.SerializeObject(serverStats))
+                client.PutAsync(new RestRequest("/api/runners/updateServerStatus")
+                    .AddBody(JsonConvert.SerializeObject(serverStats))
                     .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
             }
             

@@ -95,4 +95,6 @@ public record Server
     [Required] public int wsPort { get; set; }
 
     [Required] public bool IsEulaAccepted { get; set; }
+    
+    [Required] public int ProcessId { get; set; }
 }

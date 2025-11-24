@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Common.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Hashing;
-using Server = MineSharpAPI.Modules.Bodies.Server;
+using Serilog;
 
 namespace MineSharpAPI.Routes;
 
@@ -28,23 +29,22 @@ public class Put
         app.MapPut("/api/runners/register",
             async ([FromBody] Runners runnerDetails) => { });
         
-        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context,
+        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Common.Json.Server serverStats, HttpContext context,
             [FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
         {
+
             await using var db = await DbFactory.CreateDbContextAsync();
 
-            var server = new Modules.Api.Server();
+            //var server = new Modules.Api.Server();
 
             var entity = await db.Server.FirstOrDefaultAsync(x => x.id == serverStats.id);
+            var config = new MapperConfiguration(cfg 
+                => cfg.CreateMap<Common.Json.Server , Modules.Api.Server>(),new LoggerFactory().AddSerilog());
+            var mapper = config.CreateMapper();
+            
             if (entity == null)
-            {
-                server.id = serverStats.id;
-                server.name = serverStats.name;
-                server.parentRunner = serverStats.parentRunner;
-                server.status = serverStats.status;
-                server.usage = serverStats.usage;
-                server.wsPort = serverStats.wsPort;
-                server.IsEulaAccepted = serverStats.IsEulaAccepted;
+            {   
+                var server = mapper.Map<Common.Json.Server, Modules.Api.Server>(serverStats);
 
                 await db.Server.AddAsync(server);
             }

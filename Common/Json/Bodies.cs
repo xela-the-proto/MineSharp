@@ -1,6 +1,6 @@
 ﻿using Common.Enums;
 
-namespace MineSharpAPI.Modules.Bodies;
+namespace Common.Json;
 
 /// <summary>
 ///     Login body for email and password only
@@ -47,6 +47,8 @@ public record Server
     public int wsPort { get; set; }
 
     public bool IsEulaAccepted { get; set; }
+    
+    public int ProcessId { get; set; }
 }
 
 public record EulaUpdateBody

@@ -1,7 +1,7 @@
 ﻿using System.Net;
+using Common.Json;
 using Common.Process;
 using Common.WebSocket;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Helpers;
 using RestSharp;
 using Runner.Api;
@@ -47,7 +47,7 @@ public class ServerRunner
                 File.WriteAllText(path, txt);
             }
 
-            if (result.Data.wsPort != 0 && result.Data.wsPort != null)
+            if (result.Data != null && result.Data.wsPort != 0)
             {
                 wsThread = new Task(() =>
                     ws.StartWs(process, cts, result.Data.wsPort));

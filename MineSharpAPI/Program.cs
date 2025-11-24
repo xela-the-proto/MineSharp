@@ -1,11 +1,11 @@
 using System.Text;
+using Common.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Api;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Modules.Middleware;
 using MineSharpAPI.Queries;
@@ -197,6 +197,9 @@ public class Program
         {
             options.EnableForHttps = true;
             options.Providers.Add<GzipCompressionProvider>();
+        });
+        builder.Services.AddAutoMapper(cfg => {
+            cfg.LicenseKey = builder.Configuration["Keys:AutoMapper"];
         });
 
         /*

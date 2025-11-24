@@ -86,10 +86,9 @@ public class WebSocketServer
                 _server.SendAsync(_clientGuid, args.Data, WebSocketMessageType.Text, _ct);
 
             }
-            //Console.WriteLine(args.Data);
             if (args.Data.Contains("For help, type \"help\""))
             {
-                //TODO: Set status to running
+                
             }
         }
         catch (ArgumentNullException e)
