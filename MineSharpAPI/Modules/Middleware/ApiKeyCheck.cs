@@ -30,21 +30,25 @@ public class ApiKeyCheckMiddleware
 
                 if (!string.IsNullOrEmpty(key) && keyExist.Result != null)
                 {
+                    Log.Verbose("Good api key");
                     await _next(context);
                 }
                 else
                 {
+                    Log.Verbose("Bad api key");
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     return Results.Unauthorized();
                 }
             }
             else if (!context.Request.Headers.ContainsKey("x-api-key") && context.Request.Path.Value.Contains("/api"))
             {
+                Log.Verbose("Missing api key header");
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Results.Unauthorized();
             }
             else
             {
+                Log.Verbose("no auth");
                 _next(context);
             }
         }

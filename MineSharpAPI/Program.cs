@@ -27,7 +27,7 @@ public class Program
             .AddJsonFile("appsettings.Development.json", true, true);
 
 
-        Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+        Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Verbose().CreateLogger();
         Log.Information("\n" + splash);
         RegisterServices(builder);
 

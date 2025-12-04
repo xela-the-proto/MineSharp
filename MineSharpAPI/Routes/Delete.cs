@@ -1,5 +1,7 @@
 ﻿using Common.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MineSharpAPI.Modules.Api;
 using RestSharp;
 
 namespace MineSharpAPI.Routes;
@@ -8,12 +10,16 @@ public class Delete
 {
     public static void RegisterDeletes(WebApplication app)
     {
-        app.MapDelete("/api/Runners/StopServer", async ([FromBody] int processNumber) =>
+        app.MapDelete("/api/Runners/StopServer", async (HttpContext context,
+            [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
-            using (var client = new RestClient(body.remoteUrl))
+            var serverId = new StreamReader(context.Request.Body).ReadToEndAsync().Result;
+            var db = await database.CreateDbContextAsync();
+            var server = db.Server.First( x => x.id == serverId).ProcessId;
+            //TODO:REMOVE ALL LOCALHOST DEPENDENCIES, THIS NEEDS TO WORK OVER THE INTERNET
+            using (var client = new RestClient("http://localhost:5001"))
             {
-                if (string.IsNullOrEmpty(body.platform)) body.platform = ServerPlatform.VANILLA.ToString();
-                client.Post(new RestRequest("/stopServer", Method.Post).AddBody(body));
+                client.Post(new RestRequest("/stopServer", Method.Post).AddBody(server));
             }
         });
     }

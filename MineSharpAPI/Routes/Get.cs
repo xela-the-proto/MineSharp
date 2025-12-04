@@ -37,7 +37,6 @@ public class Get
         {
             
             var db = database.CreateDbContext();
-            Log.Warning("a");
             var id = new StreamReader(context.Request.Body);
 
             var server = await db.Server.FirstOrDefaultAsync(x => x.id ==  id.ReadToEndAsync().Result);

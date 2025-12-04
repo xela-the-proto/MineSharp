@@ -23,10 +23,12 @@ public class Get
             return Results.Ok();
         });
 
-        app.MapPost("/stopServer", async ([FromBody] int id) =>
+        app.MapPost("/stopServer", async (HttpContext context) =>
         {
+            var id = int.Parse(new StreamReader(context.Request.Body).ReadToEndAsync().Result);
             Process process = Process.GetProcessById(id);
-            process.StandardInput.WriteLine("stop");
+            var writer = process.StandardInput;
+            writer.WriteLine("stop");
             while (!process.HasExited)
             {
                 

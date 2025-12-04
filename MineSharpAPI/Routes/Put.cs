@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using Common.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,18 @@ public class Put
 
 
         app.MapPut("/api/runners/register",
-            async ([FromBody] Runners runnerDetails) => { });
+            async ([FromBody] Runners runnerDetails,[FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
+            {
+                await using  var db = DbFactory.CreateDbContextAsync().Result;
+                var runner = db.Runner.FirstAsync(x => x.Id == runnerDetails.Id).Result;
+                if ( runner != null)
+                {
+                    return Results.Ok("Runner already exists in db");
+                }
+                db.Runner.Add(runnerDetails);
+                db.SaveChanges();
+                return Results.Created();
+            });
         
         app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Common.Json.Server serverStats, HttpContext context,
             [FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
