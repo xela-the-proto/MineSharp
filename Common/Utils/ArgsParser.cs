@@ -10,7 +10,6 @@ public class ArgsParser
         { nameof(RunnerBody.version), "-v" },
         { nameof(RunnerBody.platform), "-p" },
         { nameof(RunnerBody.path), "-f" },
-        { nameof(RunnerBody.eulaAccept), "-eula" }
     };
 
     public static List<string> BuildArgs(RunnerBody body)

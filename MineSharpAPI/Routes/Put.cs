@@ -53,6 +53,7 @@ public class Put
                 entity.status = serverStats.status;
                 entity.usage = serverStats.usage;
                 entity.wsPort = serverStats.wsPort;
+                entity.ProcessId = serverStats.ProcessId;
                 db.Server.Update(entity);
             }
 

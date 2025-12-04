@@ -13,7 +13,7 @@ public class ServerRunner
 {
     private static RichCancellationToken _cts;
 
-    public void StartServerProcess(List<string> args, string workdir, bool eulaAccept)
+    public void StartServerProcess(List<string> args, string workdir)
     {
         Task wsThread;
         var broker = new CentralBroker();

@@ -28,7 +28,6 @@ public class DatabaseContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         /*
-        //Per evitare di dover controllare l'unicità della mail ad ogny query
         builder.Entity<User>(entity => { entity.HasIndex(e => e.Email).IsUnique(); });
         builder.Entity<User>().HasData();
         */

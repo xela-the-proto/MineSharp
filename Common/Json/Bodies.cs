@@ -29,7 +29,6 @@ public record RunnerBody
     public string platform { get; set; }
 
     public string remoteUrl { get; set; }
-    public bool eulaAccept { get; set; }
 }
 
 public record Server

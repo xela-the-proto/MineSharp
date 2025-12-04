@@ -19,14 +19,13 @@ public class Get
             DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
             var runner = new ServerRunner();
 
-            runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1],
-                tuple.eulaAccept);
+            runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
             return Results.Ok();
         });
 
-        app.MapPost("/stopServer", async ([FromBody] string id) =>
+        app.MapPost("/stopServer", async ([FromBody] int id) =>
         {
-            Process process = Process.GetProcessById(int.Parse(id));
+            Process process = Process.GetProcessById(id);
             process.StandardInput.WriteLine("stop");
             while (!process.HasExited)
             {
