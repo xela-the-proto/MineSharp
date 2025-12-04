@@ -41,6 +41,7 @@ public class Put
                 return Results.Created();
             });
         
+        //TODO: fix exception when the runner closes the server
         app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Common.Json.Server serverStats, HttpContext context,
             [FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
         {

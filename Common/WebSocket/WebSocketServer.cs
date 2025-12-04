@@ -91,7 +91,7 @@ public class WebSocketServer
                 
             }
         }
-        catch (ArgumentNullException e)
+        catch (NullReferenceException e)
         {
             Log.Warning("Got a null value when sending data down socket!, is the server shutting down?");
         }
@@ -115,7 +115,7 @@ public class WebSocketServer
             {
             }
         }
-        catch (ArgumentNullException e)
+        catch (NullReferenceException e)
         {
             Log.Warning("Got a null value when sending data down socket!, is the server shutting down?");
         }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Common.Converters;
 using Common.Enums;
 using Common.Json;
 using Common.WebSocket;
@@ -6,6 +7,8 @@ using Hardware.Info;
 using MineSharpAPI.Modules.Helpers;
 using Newtonsoft.Json;
 using RestSharp;
+using Runner.DownloadManager;
+using Runner.RunnerManager;
 
 namespace Runner.Api;
 
@@ -36,9 +39,9 @@ public class CentralBroker
 
                 client.PutAsync(new RestRequest("/api/runners/updateServerStatus")
                     .AddBody(JsonConvert.SerializeObject(serverStats))
-                    .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
+                    .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token),
+                    cancellationToken.Token);
             }
-            
             //If we exited many things could have happened
             //1. the socket errored out
             //2. the server stopped
@@ -61,5 +64,15 @@ public class CentralBroker
         }
 
         return Task.CompletedTask;
+    }
+
+    public void startServer(RunnerBody serverDetails)
+    {
+        var args = ArgsParser.BuildArgs(serverDetails);
+
+        DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
+        var runner = new ServerRunner();
+
+        runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
     }
 }

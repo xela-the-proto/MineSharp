@@ -3,8 +3,9 @@ using Common.Converters;
 using Common.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Runner.DownloadManager;
-using Runner.RunnerManager;
+using Runner.Api;
+using WatsonWebsocket;
+
 
 namespace Runner.Routes;
 
@@ -12,27 +13,22 @@ public class Get
 {
     public static void RegisterGets(WebApplication app)
     {
-        app.MapPost("/startServer", async ([FromBody] RunnerBody tuple) =>
+        app.MapPost("/startServer", async ([FromBody] RunnerBody serverDetails) =>
         {
-            var args = ArgsParser.BuildArgs(tuple);
-
-            DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
-            var runner = new ServerRunner();
-
-            runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
+            //Neede so that the api doesnt become a bitch with exceptions because of a bad socket close
+            Task.Run(() => new CentralBroker().startServer(serverDetails));
             return Results.Ok();
         });
 
         app.MapPost("/stopServer", async (HttpContext context) =>
         {
             var id = int.Parse(new StreamReader(context.Request.Body).ReadToEndAsync().Result);
-            Process process = Process.GetProcessById(id);
-            var writer = process.StandardInput;
-            writer.WriteLine("stop");
-            while (!process.HasExited)
+            using (var ws = new WatsonWsClient($"localhost", id))
             {
-                
+                ws.Start();
+                await ws.SendAsync("stop");
             }
+
         });
     }
 }
