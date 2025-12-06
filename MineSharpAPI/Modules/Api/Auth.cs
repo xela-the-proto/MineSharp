@@ -2,8 +2,8 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Common.Json;
 using Microsoft.IdentityModel.Tokens;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Interfaces;
 
@@ -18,8 +18,6 @@ public class Auth : IAuth
         WebApplicationBuilder builder, HttpContext httpContext)
     {
         var user = db.User.FirstOrDefault(s => s.Email == inquilino.email);
-        if (user == null || !HashingUtils.VerifyHash(inquilino.password, user.PasswordHash))
-            return Results.Unauthorized();
 
         var config = builder.Configuration;
         var key = Encoding.ASCII.GetBytes(config["Jwt:Key"]);

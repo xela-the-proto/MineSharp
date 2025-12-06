@@ -1,23 +1,32 @@
 ﻿using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
+using MineSharpAPI.Modules.Helpers;
 using Serilog;
 using WatsonWebsocket;
 
 namespace Common.WebSocket;
 
-public abstract class WebSocketServer
+public class WebSocketServer
 {
     private static WatsonWsServer? _server;
     public static int Port;
-    private static CancellationTokenSource? _cts;
+    private static RichCancellationToken? _cts;
     private static CancellationToken _ct;
     private static Guid _clientGuid;
     private static System.Diagnostics.Process? _serverProcess;
 
-    public static Task StartWs(System.Diagnostics.Process process, CancellationTokenSource token)
+    public Task StartWs(System.Diagnostics.Process process, RichCancellationToken token, int port = 0)
     {
-        Port = Random.Shared.Next(49152, 65535);
+        if (port != 0)
+        {
+            Port = port;
+        }
+        else
+        {
+            Port = Random.Shared.Next(49152, 65535);
+        }
+        Log.Debug("Opening ws on port " + Port);
         try
         {
             Log.Information("Starting Watson ws");
@@ -68,11 +77,21 @@ public abstract class WebSocketServer
     {
         try
         {
-            if (!string.IsNullOrEmpty(args.Data))
+            if (string.IsNullOrEmpty(args.Data))
+            {
                 _server.SendAsync(_clientGuid, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
-            Console.WriteLine(args.Data);
+            }
+            else
+            {
+                _server.SendAsync(_clientGuid, args.Data, WebSocketMessageType.Text, _ct);
+
+            }
+            if (args.Data.Contains("For help, type \"help\""))
+            {
+                
+            }
         }
-        catch (ArgumentNullException e)
+        catch (NullReferenceException e)
         {
             Log.Warning("Got a null value when sending data down socket!, is the server shutting down?");
         }
@@ -82,11 +101,21 @@ public abstract class WebSocketServer
     {
         try
         {
-            if (!string.IsNullOrEmpty(args.Data))
+            if (string.IsNullOrEmpty(args.Data))
+            {
                 _server.SendAsync(_clientGuid, "[ERROR]Got null data!", WebSocketMessageType.Text, _ct);
-            Console.WriteLine(args.Data);
+            }
+            else
+            {
+                _server.SendAsync(_clientGuid, args.Data, WebSocketMessageType.Text, _ct);
+
+            }
+            
+            if (args.Data.Contains("For help, type \"help\""))
+            {
+            }
         }
-        catch (ArgumentNullException e)
+        catch (NullReferenceException e)
         {
             Log.Warning("Got a null value when sending data down socket!, is the server shutting down?");
         }

@@ -1,23 +1,22 @@
 using System.Text;
+using Common.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Api;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Modules.Middleware;
 using MineSharpAPI.Queries;
 using MineSharpAPI.Routes;
+using Newtonsoft.Json.Linq;
 using Npgsql;
+using RestSharp;
 using Serilog;
 
-public class program
+public class Program
 {
-    public static string logo =
-        "                                   \n       |----------------|          \n      /|               /|          \n     / |              / |          \n   -/  |            -/  |          \n  /-   |           /    |          \n /     |          /     |          \n|------|----------------|          \n|     /          |     /           \n|    /           |   -/            \n|  -/            |  -/             \n| /          |   | |               \n|/        ---------|---   -        \n-------------|---/ |               \n             | -   |               \n          ---------|---            \n             |     |               \n                              ";
-
     public static string splash =
         "$$\\      $$\\ $$$$$$\\ $$\\   $$\\ $$$$$$$$\\  $$$$$$\\  $$\\   $$\\  $$$$$$\\  $$$$$$$\\  $$$$$$$\\  \n$$$\\    $$$ |\\_$$  _|$$$\\  $$ |$$  _____|$$  __$$\\ $$ |  $$ |$$  __$$\\ $$  __$$\\ $$  __$$\\ \n$$$$\\  $$$$ |  $$ |  $$$$\\ $$ |$$ |      $$ /  \\__|$$ |  $$ |$$ /  $$ |$$ |  $$ |$$ |  $$ |\n$$\\$$\\$$ $$ |  $$ |  $$ $$\\$$ |$$$$$\\    \\$$$$$$\\  $$$$$$$$ |$$$$$$$$ |$$$$$$$  |$$$$$$$  |\n$$ \\$$$  $$ |  $$ |  $$ \\$$$$ |$$  __|    \\____$$\\ $$  __$$ |$$  __$$ |$$  __$$< $$  ____/ \n$$ |\\$  /$$ |  $$ |  $$ |\\$$$ |$$ |      $$\\   $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n$$ | \\_/ $$ |$$$$$$\\ $$ | \\$$ |$$$$$$$$\\ \\$$$$$$  |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      \n\\__|     \\__|\\______|\\__|  \\__|\\________| \\______/ \\__|  \\__|\\__|  \\__|\\__|  \\__|\\__|      \n                                                                                           \n                                                                                           \n                                                                                           ";
 
@@ -28,18 +27,18 @@ public class program
             .AddJsonFile("appsettings.Development.json", true, true);
 
 
-        Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-        Log.Information("\n" + logo);
+        Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Verbose().CreateLogger();
         Log.Information("\n" + splash);
         RegisterServices(builder);
 
         var app = builder.Build();
 
 
-        using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
+        using (var serviceScope = app.Services.GetService<IServiceScopeFactory>()?.CreateScope())
         {
-            var context = serviceScope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            var factory = serviceScope.ServiceProvider.GetRequiredService<IDbContextFactory<DatabaseContext>>();
 
+            var context = factory.CreateDbContext();
             context.Database.Migrate();
             Log.Warning("Database migrated and created");
 
@@ -80,7 +79,7 @@ public class program
         Post.RegisterPosts(app);
         Delete.RegisterDeletes(app);
 
-        app.UseCors("Frontend");
+        //app.UseCors("Frontend");
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -90,14 +89,22 @@ public class program
         {
             errorApp.Run(async context =>
             {
+                JToken? token = null; 
+                using (var client = new RestClient("https://httpducks.com/")) 
+                { 
+                    var address = client.GetAsync(new RestRequest("/404.json")).Result; 
+                    var jobjetc = JObject.Parse(address.Content); 
+                    token = jobjetc.SelectToken("image.webp"); 
+                    var httpclient = new HttpClient();
+                }
                 context.Response.StatusCode = 500;
-                context.Response.ContentType = "application/json";
+                context.Response.ContentType = "text/html";
 
                 var errorFeature = context.Features.Get<IExceptionHandlerFeature>();
                 if (errorFeature != null)
                 {
                     var response = new { Message = "Errore interno del server" };
-                    await context.Response.WriteAsJsonAsync(response);
+                    await context.Response.WriteAsync($"<img source={token}>");
                 }
             });
         });
@@ -130,18 +137,7 @@ public class program
         /*
          * EF
          */
-        builder.Services.AddDbContext<DatabaseContext>(opt =>
-        {
-            var conn = new NpgsqlConnectionStringBuilder
-            {
-                Host = "localhost:5432",
-                Username = "postgres",
-                Password = ""
-            };
-
-            opt.UseNpgsql(conn.ConnectionString);
-            //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
-        });
+       
 
         builder.Services.AddPooledDbContextFactory<DatabaseContext>(opt =>
         {
@@ -149,13 +145,13 @@ public class program
             {
                 Host = "localhost:5432",
                 Username = "postgres",
-                Password = ""
+                Password =  builder.Configuration["ConnectionStrings:postgres"]
             };
 
             opt.UseNpgsql(conn.ConnectionString);
             //opt.usenp(csb.ConnectionString).LogTo(Log.Debug).EnableDetailedErrors();
         });
-
+        
         builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
         //TODO: cors broken
@@ -201,6 +197,9 @@ public class program
         {
             options.EnableForHttps = true;
             options.Providers.Add<GzipCompressionProvider>();
+        });
+        builder.Services.AddAutoMapper(cfg => {
+            cfg.LicenseKey = builder.Configuration["Keys:AutoMapper"];
         });
 
         /*

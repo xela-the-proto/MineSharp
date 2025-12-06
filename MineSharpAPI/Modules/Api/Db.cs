@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Common.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Serilog;
 
 namespace MineSharpAPI.Modules.Api;
@@ -26,9 +27,10 @@ public class DatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        //Per evitare di dover controllare l'unicità della mail ad ogny query
+        /*
         builder.Entity<User>(entity => { entity.HasIndex(e => e.Email).IsUnique(); });
         builder.Entity<User>().HasData();
+        */
     }
 
     public void OnDbSavingChanges(object? sender, SavingChangesEventArgs args)
@@ -37,7 +39,7 @@ public class DatabaseContext : DbContext
     }
 }
 
-/*
+
 public class DbContextFactory : IDesignTimeDbContextFactory<DbContext>
 {
     public DbContext CreateDbContext(string[] args)
@@ -46,7 +48,7 @@ public class DbContextFactory : IDesignTimeDbContextFactory<DbContext>
         return new DbContext(optionsBuilder.Options);
     }
 }
-*/
+
 
 public record User
 {
@@ -62,6 +64,10 @@ public record Runners
     [StringLength(36)] [Required] [Key] public string Id { get; set; }
 
     [StringLength(15)] [Required] public string PublicIp { get; set; }
+    
+    [Required] public List<int> OpenPorts { get; set; }
+    
+    [Required] public List<string> ServerHardware { get; set; }
 }
 
 public record APIKeys
@@ -88,4 +94,6 @@ public record Server
     [Required] public int wsPort { get; set; }
 
     [Required] public bool IsEulaAccepted { get; set; }
+    
+    [Required] public int ProcessId { get; set; }
 }

@@ -1,5 +1,9 @@
-﻿using Common.Process;
+﻿using System.Net;
+using Common.Json;
+using Common.Process;
 using Common.WebSocket;
+using MineSharpAPI.Modules.Helpers;
+using RestSharp;
 using Runner.Api;
 using Serilog;
 
@@ -7,24 +11,33 @@ namespace Runner.RunnerManager;
 
 public class ServerRunner
 {
-    private static CancellationTokenSource _cts;
+    private static RichCancellationToken _cts;
 
-    public void StartServerProcess(List<string> args, string workdir, bool eulaAccept)
+    public void StartServerProcess(List<string> args, string workdir)
     {
+        Task wsThread;
+        var broker = new CentralBroker();
+        var ws = new WebSocketServer();
+        var client = new RestClient("http://localhost:5000");
         try
         {
             Log.Verbose("Building process");
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
+            
+            var result  = client.ExecuteGetAsync<Server>(new RestRequest("/api/runners/getEulaStatus")
+                .AddParameter("text/plain",File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory,
+                    "guid.txt")), ParameterType.RequestBody)
+                .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token)).Result;
 
             Log.Verbose("Creating canc token");
-            var cts = new CancellationTokenSource();
-            var ct = cts.Token;
+            var cts = new RichCancellationToken();
             _cts = cts;
-            if (eulaAccept)
+            
+            if (result.StatusCode == HttpStatusCode.NotFound || result.Data.IsEulaAccepted == false)
             {
                 process.Start();
-                while (!process.HasExited) ;
+                while (!process.HasExited);
                 Log.Verbose("Exited first loop for eula, changing file content");
                 var path = Path.Combine(workdir, "eula.txt");
                 Log.Verbose("Opening file stream");
@@ -34,9 +47,16 @@ public class ServerRunner
                 File.WriteAllText(path, txt);
             }
 
-            var wsThread = new Task(() =>
-                WebSocketServer.StartWs(process, cts));
-            var updateThread = new Task(() => CentralBroker.UpdateServerStatus(process, cts));
+            if (result.Data != null && result.Data.wsPort != 0)
+            {
+                wsThread = new Task(() =>
+                    ws.StartWs(process, cts, result.Data.wsPort));
+            }
+            else
+            {
+                wsThread = new Task(() => ws.StartWs(process, cts));
+            }
+            var updateThread = new Task(() => broker.UpdateServerStatus(process, cts));
 
             Log.Debug("Start server");
             process.Start();
@@ -44,9 +64,8 @@ public class ServerRunner
             wsThread.Start();
             Log.Debug("Start monitoring");
             updateThread.Start();
+            
 
-
-            //TODO: Memory leak?
             while (!process.HasExited) ;
 
             Log.Information("Cancelling");
@@ -56,16 +75,14 @@ public class ServerRunner
             if (e.Message.Contains("Value cannot be null. (Parameter 'data')"))
             {
                 Log.Warning("Received null as data to send down socket, is the server shutting down?");
+                _cts.ExitReason = "ERR_SOCKET_STREAM";
                 _cts.Cancel();
-            }
-            else
-            {
-                throw;
             }
         }
         catch (Exception e)
         {
             Log.Fatal(e.Message);
+            _cts.ExitReason = "ERR_GENERIC_RUNNER_ERROR";
             _cts.Cancel();
             throw;
         }

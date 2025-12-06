@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Common.Enums;
+using Common.Json;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
-using MineSharpAPI.Modules.Bodies;
 using MineSharpAPI.Modules.Interfaces;
-using Newtonsoft.Json.Linq;
-using RestSharp;
+using Serilog;
 
 namespace MineSharpAPI.Routes;
 
@@ -11,36 +12,42 @@ public class Get
 {
     public static void RegisterGets(WebApplication app, WebApplicationBuilder builder)
     {
-        /*
-        app.MapGet("api/user/getDetails", async ([FromBody] InquilinoDB inquilino, DatabaseContext db, [FromServices]IDbInquilino dbInquilino) =>
+        app.MapGet("/debug", async (HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
-            var result = dbInquilino.GetInquilino(db, inquilino);
-            return result;
-        }).RequireAuthorization();
-        */
-        app.MapGet("/debug", async (HttpContext http, DatabaseContext database) => { });
-        app.MapGet("/error", async () =>
-        {
-            JToken? token = null;
-            using (var client = new RestClient("https://httpducks.com/"))
-            {
-                var address = client.GetAsync(new RestRequest("/404.json")).Result;
-                var jobjetc = JObject.Parse(address.Content);
-                token = jobjetc.SelectToken("image.webp");
-                var httpclient = new HttpClient();
-            }
-
-            var html = $"<img src=\"{token}\" width=\"500\" height=\"500\">";
-            return Results.Content(html, "text/html");
+            
         });
 
 
         app.MapGet("/auth/",
-            async ([FromBody] LoginBody user, HttpContext http, DatabaseContext db, IAuth auth,
-                [FromServices] IDbUser userTable) =>
+            async ([FromBody] LoginBody user, HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database, IAuth auth) =>
             {
-                var result = auth.Authenticate(db, user, builder, http).Result;
-                return result;
+                var result = auth.Authenticate(database.CreateDbContext(), user, builder, http).Result;
+                return result; 
             });
+
+        app.MapGet("/api/runners/getRunningServers", async ( [FromServices]IDbContextFactory<DatabaseContext> database) =>
+        {
+            var db = database.CreateDbContext();
+
+            var servers = db.Server.Where(x => x.status == ServerStatus.RUNNING);
+            return servers.ToList();
+        });
+        
+        app.MapGet("/api/runners/getEulaStatus", async ([FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
+        {
+            
+            var db = database.CreateDbContext();
+            var id = new StreamReader(context.Request.Body);
+
+            var server = await db.Server.FirstOrDefaultAsync(x => x.id ==  id.ReadToEndAsync().Result);
+            id.Close();
+
+            if (server == null)
+            {
+                return Results.NotFound("Database doesnt contain record for this server");
+            }
+
+            return Results.Ok(server);
+        });
     }
 }

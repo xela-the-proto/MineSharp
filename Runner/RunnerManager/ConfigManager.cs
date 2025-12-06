@@ -1,6 +1,11 @@
-﻿using Common.Json.Structures;
+﻿using System.Net;
+using Common.Json.Structures;
 using Common.Utils.Net;
+using MineSharpAPI.Modules.Api;
 using Newtonsoft.Json;
+using Polly;
+using RestSharp;
+using Serilog;
 
 namespace Runner.RunnerManager;
 
@@ -12,7 +17,8 @@ public class ConfigManager
         {
             ip = IpFinder.findMachinePublicIp(),
             ShardGuid = Guid.NewGuid(),
-            token = ""
+            token = "",
+            remote = "INSERT HERE THE HTTP URL OF THE API"
         };
         File.WriteAllText(Path.Combine(file_root, "config.json"), JsonConvert.SerializeObject(properties));
 
@@ -23,5 +29,54 @@ public class ConfigManager
     {
         return JsonConvert.DeserializeObject<RunnerPropertiesStructure>(
             File.ReadAllText(file_root + Path.DirectorySeparatorChar + "config.json"));
+    }
+
+    public void RegisterRunner()
+    {
+        RestResponse response = null;
+        using (var client = new RestClient(Program.RUNNER_PROPERTIES.remote))
+        {
+
+                try
+                {
+                    var retryPolicy = Policy.Handle<HttpRequestException>(e =>
+                    {
+                        Log.Warning("Registering runner, attemtping to reach API");
+                        return true;
+                    }).WaitAndRetry(10, retry =>
+                    {
+                        Log.Warning($"Couldnt reach api {retry}");
+                        return TimeSpan.FromSeconds(5);
+                    });
+
+                    retryPolicy.Execute(retryExecutable);
+
+                }
+                catch (HttpRequestException e)
+                { 
+                    Log.Fatal("Couldn't register runner. Is the API running? tried connecting 10 times");
+                    Thread.Sleep(2000);
+                }
+                catch (Exception e)
+                {
+                    Log.Fatal(e.Message);
+                    throw;
+                }
+        }
+    }
+
+    private static void retryExecutable()
+    {
+        using (var client = new RestClient(Program.RUNNER_PROPERTIES.remote))
+        {
+            client.Put(new RestRequest("/api/runners/register").AddBody(new Runners() 
+            { 
+                    Id = Program.RUNNER_PROPERTIES.ShardGuid.ToString(), 
+                    OpenPorts = new List<int>(), 
+                    PublicIp = Program.RUNNER_PROPERTIES.ip, 
+                    ServerHardware = new List<string>()
+            }).AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token)); 
+            Thread.Sleep(2000);
+        }
     }
 }

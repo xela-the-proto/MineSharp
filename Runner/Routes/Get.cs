@@ -1,27 +1,34 @@
+using System.Diagnostics;
 using Common.Converters;
+using Common.Json;
 using Microsoft.AspNetCore.Mvc;
-using MineSharpAPI.Modules.Bodies;
-using Runner.DownloadManager;
-using Runner.RunnerManager;
+using Microsoft.EntityFrameworkCore;
+using Runner.Api;
+using WatsonWebsocket;
+
 
 namespace Runner.Routes;
 
 public class Get
 {
-    public static void registerGets(WebApplication app)
+    public static void RegisterGets(WebApplication app)
     {
-        app.MapPost("/startServer", async ([FromBody] RunnerBody tuple) =>
+        app.MapPost("/startServer", async ([FromBody] RunnerBody serverDetails) =>
         {
-            var args = ArgsParser.BuildArgs(tuple);
-
-            DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
-            var runner = new ServerRunner();
-
-            runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1],
-                tuple.eulaAccept);
+            //Neede so that the api doesnt become a bitch with exceptions because of a bad socket close
+            Task.Run(() => new CentralBroker().startServer(serverDetails));
             return Results.Ok();
         });
 
-        app.MapGet("/debug", async ([FromBody] RunnerBody tuple) => { });
+        app.MapPost("/stopServer", async (HttpContext context) =>
+        {
+            var id = int.Parse(new StreamReader(context.Request.Body).ReadToEndAsync().Result);
+            using (var ws = new WatsonWsClient($"localhost", id))
+            {
+                ws.Start();
+                await ws.SendAsync("stop");
+            }
+
+        });
     }
 }

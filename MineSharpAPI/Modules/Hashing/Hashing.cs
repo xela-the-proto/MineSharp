@@ -21,16 +21,4 @@ public class HashingUtils
 
         return $"{Convert.ToHexString(hash)}-{Convert.ToHexString(salt)}";
     }
-
-
-    public static bool VerifyHash(string password, string hashedPass)
-    {
-        var parts = hashedPass.Split("-");
-        var salt = Convert.FromHexString(parts[1]);
-        var hash = Convert.FromHexString(parts[0]);
-
-        var inputHash = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, algorithm, hash_size);
-
-        return CryptographicOperations.FixedTimeEquals(hash, inputHash);
-    }
 }

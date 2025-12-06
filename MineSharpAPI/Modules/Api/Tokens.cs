@@ -50,43 +50,4 @@ public class Tokens
             return Results.InternalServerError($"Api key already exists with that name for user id {user}");
         }
     }
-
-    public static async Task<IResult> ValidateApiToken(HttpContext http, DatabaseContext db,
-        WebApplicationBuilder builder)
-    {
-        Log.Debug("Import IAuth");
-        var auth = http.RequestServices.GetRequiredService<IAuth>();
-        var user = "";
-        try
-        {
-            var body = "";
-            var token = auth.GenApiKey();
-            user = http.User.Claims.ToList()[1].Value;
-            Log.Debug("Start buffer read");
-
-            using (var reader = new StreamReader(http.Request.Body, Encoding.UTF8))
-            {
-                body = reader.ReadToEndAsync().Result;
-            }
-
-            Log.Debug("Buffer disposed");
-            var apiKey = new APIKeys
-            {
-                Key = token,
-                keyName = body,
-                OwnerID = user
-            };
-            var result = db.ApiKeys.First(x => x.OwnerID == user && x.Key == body);
-            /*
-            foreach (var key in result)
-            {
-                Log.Debug(key.Key + " " + key.OwnerID);
-            }*/
-            return Results.Ok();
-        }
-        catch (DataException e)
-        {
-            return Results.InternalServerError();
-        }
-    }
 }

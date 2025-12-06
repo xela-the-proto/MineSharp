@@ -7,7 +7,6 @@ namespace Runner;
 
 internal class Program
 {
-    //Path to the folder
     public static string ABSOLUTE_SERVER_PATH;
     public static string CONFIG_PATH;
     public static RunnerPropertiesStructure RUNNER_PROPERTIES;
@@ -28,10 +27,11 @@ internal class Program
             "MinesharpRunner"));
         var app = builder.Build();
 
-        Get.registerGets(app);
-
+        Get.RegisterGets(app);
 
         Log.Warning("Runner listening http://localhost:5001/");
+        var register = new ConfigManager();
+        register.RegisterRunner();
         await app.RunAsync("http://localhost:5001");
     }
 
@@ -46,7 +46,7 @@ internal class Program
             Log.Verbose("Config doesnt exist creating");
             RUNNER_PROPERTIES = ConfigManager.WriteConfig(CONFIG_PATH);
         }
-
+ 
         RUNNER_PROPERTIES = ConfigManager.ReadConfig(CONFIG_PATH);
     }
 }
