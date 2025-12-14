@@ -68,7 +68,10 @@ public class Program
             {
                 Log.Warning($"Database saved {eventArgs.EntitiesSavedCount} entities");
             };
-            context.SavingChanges += (sender, eventArgs) => { Log.Warning("Syncyng db to EF queries"); };
+            context.SavingChanges += (sender, eventArgs) =>
+            {
+                Log.Warning("Syncyng db to EF queries");
+            };
 
             context.SaveChanges();
         }
@@ -112,7 +115,7 @@ public class Program
         //TODO: Profili ratelimiter
         //app.UseRateLimiter();
         app.UseResponseCompression();
-        app.Run();
+        app.Run("http://localhost:5000/");
     }
 
     public static void RegisterServices(WebApplicationBuilder builder)

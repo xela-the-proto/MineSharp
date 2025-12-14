@@ -31,7 +31,7 @@ public class Put
             async ([FromBody] Runners runnerDetails,[FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
             {
                 await using  var db = DbFactory.CreateDbContextAsync().Result;
-                var runner = db.Runner.FirstAsync(x => x.Id == runnerDetails.Id).Result;
+                var runner = db.Runner.FirstOrDefaultAsync(x => x.Id == runnerDetails.Id).Result;
                 if ( runner != null)
                 {
                     return Results.Ok("Runner already exists in db");
