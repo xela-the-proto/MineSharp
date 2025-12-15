@@ -42,7 +42,14 @@ public class ConfigManager
             }).WaitAndRetry(10, retry =>
             {
                 Log.Warning($"Couldnt reach api {retry}");
-                Log.Fatal(returnValue.StatusCode.ToString());
+                if (returnValue != null)
+                {
+                    Log.Fatal(returnValue.StatusCode.ToString());
+                }
+                else
+                {
+                    Log.Warning("No response from api");
+                }
 
                 return TimeSpan.FromSeconds(5);
             });
@@ -76,5 +83,21 @@ public class ConfigManager
             return response;
         }
         
+    }
+
+    public void CheckArgs(string[] args)
+    {
+        foreach (var s in args)
+        {
+            switch (s)
+            {
+                case "-IgnoreAutoRegister":
+                    Program.RUNNER_PROPERTIES.ignoreAutoRegistration = true;
+                    break;
+                default:
+                    Program.RUNNER_PROPERTIES.ignoreAutoRegistration = false;
+                    break;
+            }
+        }
     }
 }

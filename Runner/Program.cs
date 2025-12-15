@@ -11,9 +11,12 @@ internal class Program
     public static string CONFIG_PATH;
     public static RunnerPropertiesStructure RUNNER_PROPERTIES;
 
-    private static async Task Main()
+    private static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder();
+        var config = new ConfigManager();
+        config.CheckArgs(args);
+        
 
         builder.Services.AddSerilog();
         Log.Logger = new LoggerConfiguration()
@@ -31,7 +34,7 @@ internal class Program
 
         Log.Warning("Runner listening http://localhost:5001/");
         var register = new ConfigManager();
-        register.RegisterRunner();
+        
         await app.RunAsync("http://localhost:5001");
     }
 
@@ -49,4 +52,5 @@ internal class Program
  
         RUNNER_PROPERTIES = ConfigManager.ReadConfig(CONFIG_PATH);
     }
+    
 }
