@@ -1,5 +1,4 @@
-﻿using Common.Enums;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using RestSharp;

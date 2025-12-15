@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Common.Json.Structures;
+﻿using Common.Json.Structures;
 using Common.Utils.Net;
 using MineSharpAPI.Modules.Api;
 using Newtonsoft.Json;

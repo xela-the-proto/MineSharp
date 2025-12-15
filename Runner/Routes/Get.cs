@@ -1,11 +1,7 @@
-using System.Diagnostics;
-using Common.Converters;
 using Common.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Runner.Api;
 using WatsonWebsocket;
-
 
 namespace Runner.Routes;
 
@@ -19,7 +15,7 @@ public class Get
             Task.Run(() => new CentralBroker().startServer(serverDetails));
             return Results.Ok();
         });
-
+ 
         app.MapPost("/stopServer", async (HttpContext context) =>
         {
             var id = int.Parse(new StreamReader(context.Request.Body).ReadToEndAsync().Result);
