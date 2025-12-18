@@ -2,7 +2,7 @@
 
 public class ConvertFlagsToJavaFlags
 {
-    public static List<string> ConvertList(List<string> flags)
+    public static List<string> ConvertList(List<string> flags, string root)
     {
         var javaFlags = new List<string>();
         //We automatically skip by 1
@@ -12,7 +12,7 @@ public class ConvertFlagsToJavaFlags
             switch (flag)
             {
                 case "-f":
-                    javaFlags.Add($"-jar {flags[i + 1]}/server.jar");
+                    javaFlags.Add($"-jar {Path.Combine([root,flags[i+1],"server.jar"])}");
                     break;
                 case "-r":
                     javaFlags.Add($"-Xmx{flags[i + 1]}m");

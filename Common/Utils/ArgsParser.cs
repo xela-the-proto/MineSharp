@@ -18,18 +18,26 @@ public class ArgsParser
         var args = new List<string>();
 
         foreach (var property in properties)
+        {
             if (mapping.TryGetValue(property.Name, out var flag))
             {
                 var value = property.GetValue(body);
 
                 // Salta se è null o default (0 per int)
-                if (value == null) continue;
+                if (value == null)
+                {
+                    continue;
+                }
 
-                if (value is int intVal && intVal == 0) continue;
+                if (value is int intVal && intVal == 0)
+                {
+                    continue;
+                }
 
                 args.Add(flag);
                 args.Add(value.ToString());
             }
+        }
 
         return args;
     }

@@ -23,6 +23,7 @@ public class Get
             {
                 ws.Start();
                 await ws.SendAsync("stop");
+                ws.Stop();
             }
 
         });

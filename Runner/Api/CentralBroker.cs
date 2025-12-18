@@ -73,6 +73,7 @@ public class CentralBroker
         DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
         var runner = new ServerRunner();
 
-        runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
+        runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args,DownloadDispatch.SERVER_ROOT), 
+            args[args.IndexOf("-f") + 1]);
     }
 }

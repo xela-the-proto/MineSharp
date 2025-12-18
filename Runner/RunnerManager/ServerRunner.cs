@@ -5,6 +5,7 @@ using Common.WebSocket;
 using MineSharpAPI.Modules.Helpers;
 using RestSharp;
 using Runner.Api;
+using Runner.DownloadManager;
 using Serilog;
 
 namespace Runner.RunnerManager;
@@ -15,13 +16,18 @@ public class ServerRunner
 
     public void StartServerProcess(List<string> args, string workdir)
     {
+        
         Task wsThread;
         var broker = new CentralBroker();
         var ws = new WebSocketServer();
         var client = new RestClient("http://localhost:5000");
+
+        workdir = Path.Combine(DownloadDispatch.SERVER_ROOT, workdir);
+        
         try
         {
             Log.Verbose("Building process");
+            
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
             
@@ -33,7 +39,11 @@ public class ServerRunner
             Log.Verbose("Creating canc token");
             var cts = new RichCancellationToken();
             _cts = cts;
-            
+
+            if (result == null)
+            {
+                throw new Exception("Frontend didnt respond, is the API downn?");
+            }
             if (result.StatusCode == HttpStatusCode.NotFound || result.Data.IsEulaAccepted == false)
             {
                 process.Start();

@@ -46,7 +46,7 @@ public class WebSocketServer
 
             _serverProcess = process;
             Log.Information("Websocket start");
-            _server.StartAsync(_ct);
+            _server.StartAsync();
             while (!process.HasExited) ;
             Log.Debug($"Process {process.Id} exited");
             _cts.Cancel();
@@ -61,7 +61,7 @@ public class WebSocketServer
                 process.OutputDataReceived -= OnProcessOutputDataReceived;
                 process.ErrorDataReceived -= OnProcessErrorDataReceived;
             }
-
+            _server.Stop();
             Log.Warning("return");
         }
         catch (Exception e)
@@ -131,6 +131,11 @@ public class WebSocketServer
 
     private static void OnServerClientConnected(object? sender, ConnectionEventArgs args)
     {
-        _clientGuid = args.Client.Guid;
+        //TODO:MAKE CLIENT GUIDS A LIST TO BROADCAST TO ALL CONSOLES ON FRONTED
+        if (_clientGuid != null)
+        {
+            _clientGuid = args.Client.Guid;
+
+        }
     }
 }
