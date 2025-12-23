@@ -34,7 +34,7 @@ internal class Program
 
         Log.Warning("Runner listening http://localhost:5001/");
         var register = new ConfigManager();
-        
+        register.RegisterRunner();
         await app.RunAsync("http://localhost:5001");
     }
 
