@@ -7,6 +7,8 @@ using RestSharp;
 using Runner.Api;
 using Runner.DownloadManager;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Runner.RunnerManager;
 
@@ -26,7 +28,7 @@ public class ServerRunner
         
         try
         {
-            Log.Verbose("Building process");
+            Log.Information("Building server process");
             
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
@@ -46,8 +48,36 @@ public class ServerRunner
             }
             if (result.StatusCode == HttpStatusCode.NotFound || result.Data.IsEulaAccepted == false)
             {
+                Log.Information("Accepting eula");
                 process.Start();
-                while (!process.HasExited);
+                //TODO: i. hate. windows.
+                /*
+                if (Log.IsEnabled(LogEventLevel.Verbose))
+                {
+                    process.OutputDataReceived += (sender, eventArgs) =>
+                    {
+                        Log.Information(eventArgs.Data ?? "null");
+                    };
+                    process.BeginOutputReadLine();
+                    process.ErrorDataReceived += (sender, eventArgs) =>
+                    {
+                        Log.Information(eventArgs.Data ?? "null");
+                    };
+                    process.BeginErrorReadLine();
+                }   
+                */
+
+                while (!process.HasExited)
+                {
+                    Log.Warning("waiting out");
+                };
+                /*
+                if (Log.IsEnabled(LogEventLevel.Verbose))
+                {
+                    process.CancelOutputRead();
+                    process.CancelErrorRead();
+                } 
+                */
                 Log.Verbose("Exited first loop for eula, changing file content");
                 var path = Path.Combine(workdir, "eula.txt");
                 Log.Verbose("Opening file stream");

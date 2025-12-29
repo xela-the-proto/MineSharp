@@ -6,13 +6,15 @@ public class Deserializer
 {
     public static T DeserializeObject<T>(string path)
     {
-        var file = File.ReadAllText(path);
+        var fileStream = new StreamReader(new FileStream(path, FileMode.Open));
+       
+            var deserializedObj = (T)JsonConvert.DeserializeObject<T>(
+                fileStream.ReadToEnd()) ?? throw new NullReferenceException();
+            Console.WriteLine("Deserialized object " + path);
+            Console.WriteLine("Deserialized object " + typeof(T));
+        fileStream.Close();
+        fileStream.Dispose();
+        return deserializedObj;
         
-
-        var deserializedObject = (T)JsonConvert.DeserializeObject<T>(file) ?? throw new NullReferenceException();
-        Console.WriteLine("Deserialized object " + path);
-        Console.WriteLine("Deserialized object " + typeof(T));
-
-        return deserializedObject;
     }
 }

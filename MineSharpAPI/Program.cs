@@ -202,7 +202,7 @@ public class Program
             options.Providers.Add<GzipCompressionProvider>();
         });
         builder.Services.AddAutoMapper(cfg => {
-            cfg.LicenseKey = builder.Configuration["Keys:AutoMapper"];
+            cfg.LicenseKey = builder.Configuration["Automapper:Key"];
         });
 
         /*
