@@ -35,10 +35,12 @@ public class DownloadDispatch
             }
 
             var buildManifestFileInBytes = client.DownloadData(buildDownRequest);
-            File.WriteAllBytesAsync(Path.Combine(realPath, "temp.json"), buildManifestFileInBytes ??
+            var writeTask = File.WriteAllBytesAsync(Path.Combine(realPath, "temp.json"), buildManifestFileInBytes ??
                                                                          throw new NullReferenceException(
                                                                              "Got empty array for build manifest!"));
-
+            //Possible deserialization when file stream hasnt closed yet
+            
+            writeTask.Wait();
             var structure =
                 Deserializer.DeserializeObject<JarDownloadStructure>(Path.Combine(realPath, "temp.json"));
 
