@@ -11,8 +11,13 @@ public class Get
     {
         app.MapPost("/startServer", async ([FromBody] RunnerBody serverDetails) =>
         {
-            //Neede so that the api doesnt become a bitch with exceptions because of a bad socket close
             Task.Run(() => new CentralBroker().startServer(serverDetails));
+            return Results.Ok();
+        });
+        
+        app.MapPost("/createserver", async ([FromBody] RunnerBody serverDetails) =>
+        {
+            Task.Run(() => new CentralBroker().createServer(serverDetails));
             return Results.Ok();
         });
  

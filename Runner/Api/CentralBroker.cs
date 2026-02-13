@@ -76,4 +76,11 @@ public class CentralBroker
         runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args,DownloadDispatch.SERVER_ROOT), 
             args[args.IndexOf("-f") + 1]);
     }
+    
+    public void createServer(RunnerBody serverDetails)
+    {
+        var args = ArgsParser.BuildArgs(serverDetails);
+
+        DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
+    } 
 }

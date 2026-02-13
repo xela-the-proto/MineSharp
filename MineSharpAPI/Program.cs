@@ -82,7 +82,8 @@ public class Program
         Post.RegisterPosts(app);
         Delete.RegisterDeletes(app);
 
-        //app.UseCors("Frontend");
+        app.UseCors("AllowFrontend");
+
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -160,14 +161,16 @@ public class Program
         //TODO: cors broken
         builder.Services.AddCors(options =>
         {
-            //Frontend policy
-            options.AddPolicy("Frontend", policyBuilder =>
-            {
-                policyBuilder.AllowAnyOrigin();
-                policyBuilder.AllowAnyMethod();
-                policyBuilder.AllowAnyHeader();
-            });
+            options.AddPolicy("AllowFrontend",
+                policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
         });
+
 
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

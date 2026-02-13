@@ -69,7 +69,7 @@ public class ServerRunner
 
                 while (!process.HasExited)
                 {
-                    Log.Warning("waiting out");
+                    //Log.Warning("waiting out");
                 };
                 /*
                 if (Log.IsEnabled(LogEventLevel.Verbose))

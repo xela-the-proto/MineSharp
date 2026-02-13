@@ -17,7 +17,7 @@ public class Get
         });
 
 
-        app.MapGet("/auth/",
+        app.MapPost("/auth/",
             async ([FromBody] LoginBody user, HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database, IAuth auth) =>
             {
                 var result = auth.Authenticate(database.CreateDbContext(), user, builder, http).Result;
@@ -45,8 +45,17 @@ public class Get
             {
                 return Results.NotFound("Database doesnt contain record for this server");
             }
-
+            await db.DisposeAsync();
             return Results.Ok(server);
         });
+
+        app.MapGet("/auth/getApiKeys",
+            async ([FromServices] IDbContextFactory<DatabaseContext> database, HttpContext context) =>
+            {
+                using (var db =database.CreateDbContext())
+                {
+                    return db.ApiKeys.ToList();
+                }
+            }).RequireAuthorization();
     }
 }

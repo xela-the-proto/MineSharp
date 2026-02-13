@@ -26,7 +26,18 @@ public class Post
             });
 
         app.MapPost("/api/Runners/CreateServer",
-            async ([FromBody] RunnerBody body) => { });
+            async ([FromBody] RunnerBody body) =>
+            {
+                using (var client = new RestClient(body.remoteUrl))
+                {
+                    if (string.IsNullOrEmpty(body.platform))
+                    {
+                        body.platform = ServerPlatform.VANILLA.ToString();
+                    }
+
+                    client.Post(new RestRequest("/createserver", Method.Post).AddBody(body));
+                }
+            });
 
         app.MapPost("/api/runners/GenAPIToken",
             async (HttpContext http, [FromServices] IDbContextFactory<DatabaseContext> database) =>
