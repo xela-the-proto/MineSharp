@@ -24,15 +24,24 @@ public class Get
                 return result; 
             });
 
-        app.MapGet("/api/runners/getRunningServers", async ( [FromServices]IDbContextFactory<DatabaseContext> database) =>
+        app.MapGet("/api/server/getRunningServers", async ( [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
             var db = database.CreateDbContext();
 
             var servers = db.Server.Where(x => x.status == ServerStatus.RUNNING);
+            db.DisposeAsync();
             return servers.ToList();
         });
+
+        app.MapGet("/api/server/getAllServers", async ([FromServices] IDbContextFactory<DatabaseContext> database) =>
+        {
+            var db = database.CreateDbContext();
+            var servers = db.Server.ToList();
+            db.DisposeAsync();
+            return servers;
+        });
         
-        app.MapGet("/api/runners/getEulaStatus", async ([FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
+        app.MapGet("/api/server/getEulaStatus", async ([FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
         {
             
             var db = database.CreateDbContext();

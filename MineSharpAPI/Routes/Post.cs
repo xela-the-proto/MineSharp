@@ -11,7 +11,7 @@ public class Post
 {
     public static void RegisterPosts(WebApplication app)
     {
-        app.MapPost("/api/Runners/RunServer",
+        app.MapPost("/api/server/RunServer",
             async ([FromBody] RunnerBody body) =>
             {
                 using (var client = new RestClient(body.remoteUrl))
@@ -25,7 +25,7 @@ public class Post
                 }
             });
 
-        app.MapPost("/api/Runners/CreateServer",
+        app.MapPost("/api/server/CreateServer",
             async ([FromBody] RunnerBody body) =>
             {
                 using (var client = new RestClient(body.remoteUrl))
@@ -39,7 +39,7 @@ public class Post
                 }
             });
 
-        app.MapPost("/api/runners/GenAPIToken",
+        app.MapPost("/api/auth/GenAPIToken",
             async (HttpContext http, [FromServices] IDbContextFactory<DatabaseContext> database) =>
             {
                 var result = Tokens.CreateApiToken(http, database.CreateDbContext());

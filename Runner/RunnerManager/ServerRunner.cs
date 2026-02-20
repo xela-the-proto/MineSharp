@@ -33,7 +33,7 @@ public class ServerRunner
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
             
-            var result  = client.ExecuteGetAsync<Server>(new RestRequest("/api/runners/getEulaStatus")
+            var result  = client.ExecuteGetAsync<Server>(new RestRequest("/api/server/getEulaStatus")
                 .AddParameter("text/plain",File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory,
                     "guid.txt")), ParameterType.RequestBody)
                 .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token)).Result;

@@ -37,7 +37,7 @@ public class CentralBroker
                 serverStats.IsEulaAccepted = true;
                 Thread.Sleep(3000);
 
-                client.PutAsync(new RestRequest("/api/runners/updateServerStatus")
+                client.PutAsync(new RestRequest("/api/server/updateServerStatus")
                     .AddBody(JsonConvert.SerializeObject(serverStats))
                     .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token),
                     cancellationToken.Token);
@@ -58,7 +58,7 @@ public class CentralBroker
                     serverStats.status = ServerStatus.RUNNER_ERROR;
                     break;
             }
-            client.PutAsync(new RestRequest("/api/runners/updateServerStatus").AddBody(
+            client.PutAsync(new RestRequest("/api/server/updateServerStatus").AddBody(
                     JsonConvert.SerializeObject(serverStats))
                 .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
         }

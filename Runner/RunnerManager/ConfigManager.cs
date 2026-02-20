@@ -73,7 +73,7 @@ public class ConfigManager
     {
         using (var client = new RestClient(Program.RUNNER_PROPERTIES.remote))
         {
-            var response = client.Put(new RestRequest("/api/runners/register").AddBody(new Runners()
+            var response = client.Put(new RestRequest("/api/auth/registerRunner").AddBody(new Runners()
             {
                 Id = Program.RUNNER_PROPERTIES.ShardGuid.ToString(),
                 OpenPorts = new List<int>(),

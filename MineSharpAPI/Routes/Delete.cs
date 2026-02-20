@@ -9,7 +9,7 @@ public class Delete
 {
     public static void RegisterDeletes(WebApplication app)
     {
-        app.MapDelete("/api/Runners/StopServer", async (HttpContext context,
+        app.MapDelete("/api/server/StopServer", async (HttpContext context,
             [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
             var serverId = new StreamReader(context.Request.Body).ReadToEndAsync().Result;
