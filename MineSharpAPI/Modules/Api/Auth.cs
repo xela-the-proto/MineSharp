@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Common.Json;
 using Microsoft.IdentityModel.Tokens;
-using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Interfaces;
 
 namespace MineSharpAPI.Modules.Api;

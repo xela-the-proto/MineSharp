@@ -6,4 +6,5 @@ public struct RunnerPropertiesStructure
     public string ip { get; set; }
     public string token { get; set; }
     public string remote { get; set; }
+    public bool ignoreAutoRegistration { get; set; }
 }

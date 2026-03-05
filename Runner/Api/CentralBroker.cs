@@ -37,7 +37,7 @@ public class CentralBroker
                 serverStats.IsEulaAccepted = true;
                 Thread.Sleep(3000);
 
-                client.PutAsync(new RestRequest("/api/runners/updateServerStatus")
+                client.PutAsync(new RestRequest("/api/server/updateServerStatus")
                     .AddBody(JsonConvert.SerializeObject(serverStats))
                     .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token),
                     cancellationToken.Token);
@@ -58,7 +58,7 @@ public class CentralBroker
                     serverStats.status = ServerStatus.RUNNER_ERROR;
                     break;
             }
-            client.PutAsync(new RestRequest("/api/runners/updateServerStatus").AddBody(
+            client.PutAsync(new RestRequest("/api/server/updateServerStatus").AddBody(
                     JsonConvert.SerializeObject(serverStats))
                 .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
         }
@@ -73,6 +73,14 @@ public class CentralBroker
         DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
         var runner = new ServerRunner();
 
-        runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args), args[args.IndexOf("-f") + 1]);
+        runner.StartServerProcess(ConvertFlagsToJavaFlags.ConvertList(args,DownloadDispatch.SERVER_ROOT), 
+            args[args.IndexOf("-f") + 1]);
     }
+    
+    public void createServer(RunnerBody serverDetails)
+    {
+        var args = ArgsParser.BuildArgs(serverDetails);
+
+        DownloadDispatch.DownloadJar(args[args.IndexOf("-v") + 1], args[args.IndexOf("-f") + 1]);
+    } 
 }

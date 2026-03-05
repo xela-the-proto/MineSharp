@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Common.Json.Structures;
+﻿using Common.Json.Structures;
 using Common.Utils.Net;
 using MineSharpAPI.Modules.Api;
 using Newtonsoft.Json;
@@ -33,50 +32,72 @@ public class ConfigManager
 
     public void RegisterRunner()
     {
-        RestResponse response = null;
-        using (var client = new RestClient(Program.RUNNER_PROPERTIES.remote))
+        RestResponse returnValue = null;
+        try
         {
-
-                try
+            var retryPolicy = Policy.Handle<HttpRequestException>(e =>
+            {
+                Log.Warning("Registering runner, attemtping to reach API");
+                return true;
+            }).WaitAndRetry(10, retry =>
+            {
+                Log.Warning($"Couldnt reach api {retry}");
+                if (returnValue != null)
                 {
-                    var retryPolicy = Policy.Handle<HttpRequestException>(e =>
-                    {
-                        Log.Warning("Registering runner, attemtping to reach API");
-                        return true;
-                    }).WaitAndRetry(10, retry =>
-                    {
-                        Log.Warning($"Couldnt reach api {retry}");
-                        return TimeSpan.FromSeconds(5);
-                    });
-
-                    retryPolicy.Execute(retryExecutable);
-
+                    Log.Fatal(returnValue.StatusCode.ToString());
                 }
-                catch (HttpRequestException e)
-                { 
-                    Log.Fatal("Couldn't register runner. Is the API running? tried connecting 10 times");
-                    Thread.Sleep(2000);
-                }
-                catch (Exception e)
+                else
                 {
-                    Log.Fatal(e.Message);
-                    throw;
+                    Log.Warning("No response from api");
                 }
+
+                return TimeSpan.FromSeconds(5);
+            });
+
+            returnValue = retryPolicy.Execute(Executable);
+        }
+        catch (HttpRequestException e)
+        {
+            Log.Fatal("Couldn't register runner. Is the API running? tried connecting 10 times");
+            Log.Fatal(returnValue.StatusCode.ToString());
+            Thread.Sleep(2000);
+        }
+        catch (Exception e)
+        {
+            Log.Fatal(e.Message);
+            throw;
         }
     }
 
-    private static void retryExecutable()
+    private RestResponse Executable()
     {
         using (var client = new RestClient(Program.RUNNER_PROPERTIES.remote))
         {
-            client.Put(new RestRequest("/api/runners/register").AddBody(new Runners() 
-            { 
-                    Id = Program.RUNNER_PROPERTIES.ShardGuid.ToString(), 
-                    OpenPorts = new List<int>(), 
-                    PublicIp = Program.RUNNER_PROPERTIES.ip, 
-                    ServerHardware = new List<string>()
-            }).AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token)); 
-            Thread.Sleep(2000);
+            var response = client.Put(new RestRequest("/api/auth/registerRunner").AddBody(new Runners()
+            {
+                Id = Program.RUNNER_PROPERTIES.ShardGuid.ToString(),
+                OpenPorts = new List<int>(),
+                PublicIp = Program.RUNNER_PROPERTIES.ip,
+                ServerHardware = new List<string>()
+            }).AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token));
+            return response;
+        }
+        
+    }
+
+    public void CheckArgs(string[] args)
+    {
+        foreach (var s in args)
+        {
+            switch (s)
+            {
+                case "-IgnoreAutoRegister":
+                    Program.RUNNER_PROPERTIES.ignoreAutoRegistration = true;
+                    break;
+                default:
+                    Program.RUNNER_PROPERTIES.ignoreAutoRegistration = false;
+                    break;
+            }
         }
     }
 }

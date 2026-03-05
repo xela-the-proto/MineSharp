@@ -5,7 +5,10 @@ using Common.WebSocket;
 using MineSharpAPI.Modules.Helpers;
 using RestSharp;
 using Runner.Api;
+using Runner.DownloadManager;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Runner.RunnerManager;
 
@@ -15,17 +18,22 @@ public class ServerRunner
 
     public void StartServerProcess(List<string> args, string workdir)
     {
+        
         Task wsThread;
         var broker = new CentralBroker();
         var ws = new WebSocketServer();
         var client = new RestClient("http://localhost:5000");
+
+        workdir = Path.Combine(DownloadDispatch.SERVER_ROOT, workdir);
+        
         try
         {
-            Log.Verbose("Building process");
+            Log.Information("Building server process");
+            
             var process = ProcessInfoHelper.BuildStarterProcess("java", args, workdir,
                 true, true, true, false);
             
-            var result  = client.ExecuteGetAsync<Server>(new RestRequest("/api/runners/getEulaStatus")
+            var result  = client.ExecuteGetAsync<Server>(new RestRequest("/api/server/getEulaStatus")
                 .AddParameter("text/plain",File.ReadAllText(Path.Combine(process.StartInfo.WorkingDirectory,
                     "guid.txt")), ParameterType.RequestBody)
                 .AddHeader("x-api-key", Program.RUNNER_PROPERTIES.token)).Result;
@@ -33,11 +41,43 @@ public class ServerRunner
             Log.Verbose("Creating canc token");
             var cts = new RichCancellationToken();
             _cts = cts;
-            
+
+            if (result == null)
+            {
+                throw new Exception("Frontend didnt respond, is the API downn?");
+            }
             if (result.StatusCode == HttpStatusCode.NotFound || result.Data.IsEulaAccepted == false)
             {
+                Log.Information("Accepting eula");
                 process.Start();
-                while (!process.HasExited);
+                //TODO: i. hate. windows.
+                /*
+                if (Log.IsEnabled(LogEventLevel.Verbose))
+                {
+                    process.OutputDataReceived += (sender, eventArgs) =>
+                    {
+                        Log.Information(eventArgs.Data ?? "null");
+                    };
+                    process.BeginOutputReadLine();
+                    process.ErrorDataReceived += (sender, eventArgs) =>
+                    {
+                        Log.Information(eventArgs.Data ?? "null");
+                    };
+                    process.BeginErrorReadLine();
+                }   
+                */
+
+                while (!process.HasExited)
+                {
+                    Log.Warning("waiting out");
+                };
+                /*
+                if (Log.IsEnabled(LogEventLevel.Verbose))
+                {
+                    process.CancelOutputRead();
+                    process.CancelErrorRead();
+                } 
+                */
                 Log.Verbose("Exited first loop for eula, changing file content");
                 var path = Path.Combine(workdir, "eula.txt");
                 Log.Verbose("Opening file stream");

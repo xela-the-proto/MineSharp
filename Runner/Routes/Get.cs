@@ -1,11 +1,7 @@
-using System.Diagnostics;
-using Common.Converters;
 using Common.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Runner.Api;
 using WatsonWebsocket;
-
 
 namespace Runner.Routes;
 
@@ -15,11 +11,16 @@ public class Get
     {
         app.MapPost("/startServer", async ([FromBody] RunnerBody serverDetails) =>
         {
-            //Neede so that the api doesnt become a bitch with exceptions because of a bad socket close
             Task.Run(() => new CentralBroker().startServer(serverDetails));
             return Results.Ok();
         });
-
+        
+        app.MapPost("/createserver", async ([FromBody] RunnerBody serverDetails) =>
+        {
+            Task.Run(() => new CentralBroker().createServer(serverDetails));
+            return Results.Ok();
+        });
+ 
         app.MapPost("/stopServer", async (HttpContext context) =>
         {
             var id = int.Parse(new StreamReader(context.Request.Body).ReadToEndAsync().Result);
@@ -27,6 +28,7 @@ public class Get
             {
                 ws.Start();
                 await ws.SendAsync("stop");
+                ws.Stop();
             }
 
         });

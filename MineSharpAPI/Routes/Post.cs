@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using RestSharp;
-using WatsonWebsocket;
 
 namespace MineSharpAPI.Routes;
 
@@ -12,7 +11,7 @@ public class Post
 {
     public static void RegisterPosts(WebApplication app)
     {
-        app.MapPost("/api/Runners/RunServer",
+        app.MapPost("/api/server/RunServer",
             async ([FromBody] RunnerBody body) =>
             {
                 using (var client = new RestClient(body.remoteUrl))
@@ -21,17 +20,30 @@ public class Post
                     {
                         body.platform = ServerPlatform.VANILLA.ToString();
                     }
+
                     client.Post(new RestRequest("/startServer", Method.Post).AddBody(body));
                 }
             });
 
-        app.MapPost("/api/Runners/CreateServer",
-            async ([FromBody] RunnerBody body) => { });
+        app.MapPost("/api/server/CreateServer",
+            async ([FromBody] RunnerBody body) =>
+            {
+                using (var client = new RestClient(body.remoteUrl))
+                {
+                    if (string.IsNullOrEmpty(body.platform))
+                    {
+                        body.platform = ServerPlatform.VANILLA.ToString();
+                    }
 
-        app.MapPost("/api/runners/GenAPIToken", async (HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database) =>
-        {
-            var result = Tokens.CreateApiToken(http, database.CreateDbContext());
-            return result.Result;
-        }).RequireAuthorization();
+                    client.Post(new RestRequest("/createserver", Method.Post).AddBody(body));
+                }
+            });
+
+        app.MapPost("/api/auth/GenAPIToken",
+            async (HttpContext http, [FromServices] IDbContextFactory<DatabaseContext> database) =>
+            {
+                var result = Tokens.CreateApiToken(http, database.CreateDbContext());
+                return result.Result;
+            }).RequireAuthorization();
     }
 }

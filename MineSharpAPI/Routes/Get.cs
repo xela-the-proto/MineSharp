@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Interfaces;
-using Serilog;
 
 namespace MineSharpAPI.Routes;
 
@@ -18,22 +17,31 @@ public class Get
         });
 
 
-        app.MapGet("/auth/",
+        app.MapPost("/auth/",
             async ([FromBody] LoginBody user, HttpContext http, [FromServices]IDbContextFactory<DatabaseContext> database, IAuth auth) =>
             {
                 var result = auth.Authenticate(database.CreateDbContext(), user, builder, http).Result;
                 return result; 
             });
 
-        app.MapGet("/api/runners/getRunningServers", async ( [FromServices]IDbContextFactory<DatabaseContext> database) =>
+        app.MapGet("/api/server/getRunningServers", async ( [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
             var db = database.CreateDbContext();
 
             var servers = db.Server.Where(x => x.status == ServerStatus.RUNNING);
+            db.DisposeAsync();
             return servers.ToList();
         });
+
+        app.MapGet("/api/server/getAllServers", async ([FromServices] IDbContextFactory<DatabaseContext> database) =>
+        {
+            var db = database.CreateDbContext();
+            var servers = db.Server.ToList();
+            db.DisposeAsync();
+            return servers;
+        });
         
-        app.MapGet("/api/runners/getEulaStatus", async ([FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
+        app.MapGet("/api/server/getEulaStatus", async ([FromServices]IDbContextFactory<DatabaseContext> database, HttpContext context) =>
         {
             
             var db = database.CreateDbContext();
@@ -46,8 +54,17 @@ public class Get
             {
                 return Results.NotFound("Database doesnt contain record for this server");
             }
-
+            await db.DisposeAsync();
             return Results.Ok(server);
         });
+
+        app.MapGet("/auth/getApiKeys",
+            async ([FromServices] IDbContextFactory<DatabaseContext> database, HttpContext context) =>
+            {
+                using (var db =database.CreateDbContext())
+                {
+                    return db.ApiKeys.ToList();
+                }
+            }).RequireAuthorization();
     }
 }

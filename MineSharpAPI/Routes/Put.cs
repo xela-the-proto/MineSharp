@@ -1,11 +1,11 @@
-﻿using System.Net;
-using AutoMapper;
+﻿using AutoMapper;
 using Common.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MineSharpAPI.Modules.Api;
 using MineSharpAPI.Modules.Hashing;
 using Serilog;
+using Server = Common.Json.Server;
 
 namespace MineSharpAPI.Routes;
 
@@ -13,7 +13,7 @@ public class Put
 {
     public static void RegisterPuts(WebApplication app)
     {
-        app.MapPut("/api/user/register", async ([FromBody] LoginBody user, HttpContext http,
+        app.MapPut("/api/auth/registerUser", async ([FromBody] LoginBody user, HttpContext http,
             [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
             var db = database.CreateDbContextAsync().Result;
@@ -27,11 +27,11 @@ public class Put
         }).RequireAuthorization();
 
 
-        app.MapPut("/api/runners/register",
+        app.MapPut("/api/auth/registerRunner",
             async ([FromBody] Runners runnerDetails,[FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
             {
                 await using  var db = DbFactory.CreateDbContextAsync().Result;
-                var runner = db.Runner.FirstAsync(x => x.Id == runnerDetails.Id).Result;
+                var runner = db.Runner.FirstOrDefaultAsync(x => x.Id == runnerDetails.Id).Result;
                 if ( runner != null)
                 {
                     return Results.Ok("Runner already exists in db");
@@ -42,7 +42,7 @@ public class Put
             });
         
         //TODO: fix exception when the runner closes the server
-        app.MapPut("/api/runners/updateServerStatus", async ([FromBody] Common.Json.Server serverStats, HttpContext context,
+        app.MapPut("/api/server/updateServerStatus", async ([FromBody] Server serverStats, HttpContext context,
             [FromServices]IDbContextFactory<DatabaseContext> DbFactory) =>
         {
 
@@ -52,12 +52,12 @@ public class Put
 
             var entity = await db.Server.FirstOrDefaultAsync(x => x.id == serverStats.id);
             var config = new MapperConfiguration(cfg 
-                => cfg.CreateMap<Common.Json.Server , Modules.Api.Server>(),new LoggerFactory().AddSerilog());
+                => cfg.CreateMap<Server , Modules.Api.Server>(),new LoggerFactory().AddSerilog());
             var mapper = config.CreateMapper();
             
             if (entity == null)
             {   
-                var server = mapper.Map<Common.Json.Server, Modules.Api.Server>(serverStats);
+                var server = mapper.Map<Server, Modules.Api.Server>(serverStats);
 
                 await db.Server.AddAsync(server);
             }
@@ -73,7 +73,7 @@ public class Put
             await db.SaveChangesAsync();
         });
         
-        app.MapPut("/api/runners/updateEulaStatus", async ([FromBody] EulaUpdateBody body, [FromServices]IDbContextFactory<DatabaseContext> database) =>
+        app.MapPut("/api/server/updateEulaStatus", async ([FromBody] EulaUpdateBody body, [FromServices]IDbContextFactory<DatabaseContext> database) =>
         {
             var db = database.CreateDbContext();
 

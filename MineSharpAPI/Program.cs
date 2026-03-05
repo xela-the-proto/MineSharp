@@ -27,7 +27,7 @@ public class Program
             .AddJsonFile("appsettings.Development.json", true, true);
 
 
-        Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Verbose().CreateLogger();
+        Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Information().CreateLogger();
         Log.Information("\n" + splash);
         RegisterServices(builder);
 
@@ -68,7 +68,10 @@ public class Program
             {
                 Log.Warning($"Database saved {eventArgs.EntitiesSavedCount} entities");
             };
-            context.SavingChanges += (sender, eventArgs) => { Log.Warning("Syncyng db to EF queries"); };
+            context.SavingChanges += (sender, eventArgs) =>
+            {
+                Log.Warning("Syncyng db to EF queries");
+            };
 
             context.SaveChanges();
         }
@@ -79,7 +82,8 @@ public class Program
         Post.RegisterPosts(app);
         Delete.RegisterDeletes(app);
 
-        //app.UseCors("Frontend");
+        app.UseCors("AllowFrontend");
+
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -112,7 +116,7 @@ public class Program
         //TODO: Profili ratelimiter
         //app.UseRateLimiter();
         app.UseResponseCompression();
-        app.Run();
+        app.Run("http://localhost:5000/");
     }
 
     public static void RegisterServices(WebApplicationBuilder builder)
@@ -157,14 +161,16 @@ public class Program
         //TODO: cors broken
         builder.Services.AddCors(options =>
         {
-            //Frontend policy
-            options.AddPolicy("Frontend", policyBuilder =>
-            {
-                policyBuilder.AllowAnyOrigin();
-                policyBuilder.AllowAnyMethod();
-                policyBuilder.AllowAnyHeader();
-            });
+            options.AddPolicy("AllowFrontend",
+                policy =>
+                {
+                    policy.SetIsOriginAllowed(origin => true)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
         });
+
 
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -199,7 +205,7 @@ public class Program
             options.Providers.Add<GzipCompressionProvider>();
         });
         builder.Services.AddAutoMapper(cfg => {
-            cfg.LicenseKey = builder.Configuration["Keys:AutoMapper"];
+            cfg.LicenseKey = builder.Configuration["Automapper:Key"];
         });
 
         /*
