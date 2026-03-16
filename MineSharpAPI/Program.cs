@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MineSharpAPI.Modules.Api;
+using MineSharpAPI.Modules.Hashing;
 using MineSharpAPI.Modules.Interfaces;
 using MineSharpAPI.Modules.Middleware;
-using MineSharpAPI.Queries;
 using MineSharpAPI.Routes;
 using Newtonsoft.Json.Linq;
 using Npgsql;
@@ -44,11 +44,11 @@ public class Program
 
             if (!context.User.Any())
             {
-                var db = serviceScope.ServiceProvider.GetRequiredService<IDbUser>();
-                db.SetUser(context, new LoginBody
+                context.User.Add(new User
                 {
-                    email = "welcome@to.mineasharp",
-                    password = "admin"
+                    Email = "welcome@to.mineasharp",
+                    Id = "1",
+                    PasswordHash = HashingUtils.HashString("admin") 
                 });
             }
 
@@ -126,7 +126,6 @@ public class Program
          */
         builder.Services.AddSingleton<IAuth, Auth>();
         builder.Services.AddScoped<IAuth, Auth>();
-        builder.Services.AddSingleton<IDbUser, DbServer>();
         /*
          * Redis cache
          */
