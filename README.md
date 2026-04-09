@@ -1,3 +1,5 @@
+## This project has been archived, mostly because of project burnout
+
 # MineSharp: minecraft hosting made easy
 
 MineSharpAPI is an experimental C# project inspired by **Pterodactyl** and similar server management panels.  
